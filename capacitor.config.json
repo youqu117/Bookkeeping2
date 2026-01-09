@@ -2,6 +2,5 @@
 {
   "appId": "com.zenledger.app",
   "appName": "ZenLedger",
-  "webDir": "dist",
-  "bundledWebRuntime": false
+  "webDir": "dist"
 }

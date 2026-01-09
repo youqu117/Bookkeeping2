@@ -44,21 +44,19 @@ const App: React.FC = () => {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(null);
   const [selectedAccountFilter, setSelectedAccountFilter] = useState<string | null>(null);
-  const [showAccounts, setShowAccounts] = useState(true);
+  const [showAccounts, setShowAccounts] = useState(false); // Folded by default
   const [isEditingAccounts, setIsEditingAccounts] = useState(false);
   const [newAccountName, setNewAccountName] = useState('');
   const [showTagManager, setShowTagManager] = useState(false);
   const [tagManagerInitialId, setTagManagerInitialId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Swipe logic
-  const touchStartX = useRef(0);
-  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchStart = (e: React.TouchEvent) => { (window as any).touchStartX = e.touches[0].clientX; };
   const handleTouchEnd = (e: React.TouchEvent) => {
     const touchEndX = e.changedTouches[0].clientX;
-    const diff = touchStartX.current - touchEndX;
-    if (diff > 100) setView('stats'); // Swipe Left -> Stats
-    if (diff < -100) setView('list'); // Swipe Right -> List
+    const diff = ((window as any).touchStartX || 0) - touchEndX;
+    if (diff > 100) setView('stats');
+    if (diff < -100) setView('list');
   };
 
   useEffect(() => { localStorage.setItem('zenledger_transactions', JSON.stringify(transactions)); }, [transactions]);
@@ -88,13 +86,12 @@ const App: React.FC = () => {
 
   const getThemeStyles = () => {
     switch(theme) {
-      // Obsidian Gold (Premium Midnight)
       case 'midnight': return { 
-          bg: 'bg-[#050505]', 
-          text: 'text-[#FDFBF7]', 
-          card: 'bg-[#121212] border-[#D4AF37]/15', 
-          accent: 'bg-gradient-to-tr from-[#8E6E2E] via-[#D4AF37] to-[#F9E076] text-[#050505] shadow-[0_0_15px_rgba(212,175,55,0.2)]', 
-          secondary: 'text-[#D4AF37]/50' 
+          bg: 'bg-[#0c0c0e]', 
+          text: 'text-[#e1e1e3]', 
+          card: 'bg-[#1a1a1c] border-white/5', 
+          accent: 'bg-gradient-to-br from-[#F3E3C3] via-[#D1A96B] to-[#A6824A] text-[#0c0c0e] shadow-[0_4px_20px_rgba(209,169,107,0.15)]', 
+          secondary: 'text-[#D1A96B]/70' 
       };
       case 'sunset': return { bg: 'bg-orange-50', text: 'text-slate-800', card: 'bg-white border-orange-100', accent: 'bg-orange-500 text-white', secondary: 'text-slate-500' };
       case 'ocean': return { bg: 'bg-cyan-50', text: 'text-slate-800', card: 'bg-white border-cyan-100', accent: 'bg-cyan-600 text-white', secondary: 'text-slate-500' };
@@ -195,18 +192,17 @@ const App: React.FC = () => {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <header className={`sticky top-0 z-30 px-5 pt-3 pb-2 flex justify-between items-center backdrop-blur-md border-b ${isDark ? 'border-[#D4AF37]/20 bg-[#050505]/90' : 'border-slate-200/60 bg-white/80'}`}>
+      <header className={`sticky top-0 z-30 px-5 pt-3 pb-2 flex justify-between items-center backdrop-blur-md border-b ${isDark ? 'border-white/5 bg-[#0c0c0e]/90' : 'border-slate-200/60 bg-white/80'}`}>
         <div className="flex items-center gap-2">
-           <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-lg shadow-sm ${T.accent}`}>B</div>
            <span className="font-black text-xl tracking-tight">{TEXT.appName}</span>
         </div>
         <div className="flex items-center gap-2">
-           <button onClick={() => setShowGeminiChat(true)} className={`p-2 rounded-xl border transition-all active:scale-95 animate-in fade-in ${isDark ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-indigo-50 border-indigo-100 text-indigo-500'}`}><Sparkles size={18} /></button>
-           <div className={`flex p-1 rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-slate-100 border-slate-200'}`}>
+           <button onClick={() => setShowGeminiChat(true)} className={`p-2 rounded-xl border transition-all active:scale-95 animate-in fade-in ${isDark ? 'bg-[#D1A96B]/10 border-[#D1A96B]/30 text-[#D1A96B]' : 'bg-indigo-50 border-indigo-100 text-indigo-500'}`}><Sparkles size={18} /></button>
+           <div className={`flex p-1 rounded-xl border ${isDark ? 'bg-[#1a1a1c] border-neutral-800' : 'bg-slate-100 border-slate-200'}`}>
               <button onClick={() => setView('list')} className={`p-2 rounded-lg transition-all ${view === 'list' ? `${T.card} shadow-sm border-transparent` : 'opacity-50'}`}><LayoutList size={18} /></button>
               <button onClick={() => setView('stats')} className={`p-2 rounded-lg transition-all ${view === 'stats' ? `${T.card} shadow-sm border-transparent` : 'opacity-50'}`}><PieChart size={18} /></button>
            </div>
-           <button onClick={() => setShowSettings(true)} className={`p-3 rounded-xl border transition-all active:scale-95 ${isDark ? 'bg-[#121212] border-[#D4AF37]/20' : 'bg-white border-slate-200'}`}><Settings size={20} className={T.secondary} /></button>
+           <button onClick={() => setShowSettings(true)} className={`p-3 rounded-xl border transition-all active:scale-95 ${T.card}`}><Settings size={20} className={T.secondary} /></button>
         </div>
       </header>
 
@@ -217,7 +213,7 @@ const App: React.FC = () => {
                 <div className={`${isTablet ? '' : 'mb-4'}`}>
                     <button onClick={() => setShowAccounts(!showAccounts)} className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all border ${showAccounts ? 'mb-2 border-transparent bg-transparent' : `${T.card} hover:shadow-md`}`}>
                        <div className="flex items-center gap-3">
-                           <div className={`p-2 rounded-full ${T.accent} bg-opacity-10 text-current`}><Wallet size={16} /></div>
+                           <div className={`p-2 rounded-full ${isDark ? 'bg-[#D1A96B]/10 text-[#D1A96B]' : 'bg-slate-900/10 text-slate-900'} font-bold`}><Wallet size={16} /></div>
                            <div className="text-left"><div className="text-[10px] font-bold uppercase tracking-widest opacity-50">{activeWalletName}</div><div className="text-sm font-black">{activeWalletBalance.toLocaleString()}</div></div>
                        </div>
                        {showAccounts ? <ChevronUp size={16} className="opacity-50" /> : <ChevronDown size={16} className="opacity-50" />}
@@ -226,20 +222,20 @@ const App: React.FC = () => {
                         <div className="animate-in slide-in-from-top-4 fade-in duration-300">
                             <div className="flex justify-between items-center px-1 mb-2">
                                  <span className="text-[10px] font-bold uppercase opacity-40">{TEXT.accounts}</span>
-                                 <button onClick={() => setIsEditingAccounts(!isEditingAccounts)} className={`text-[10px] font-bold uppercase underline opacity-50 ${T.text}`}>{isEditingAccounts ? 'Done' : 'Manage'}</button>
+                                 <button onClick={() => setIsEditingAccounts(!isEditingAccounts)} className={`text-[10px] font-bold uppercase underline opacity-50 ${T.text}`}>{isEditingAccounts ? 'Done' : 'MANAGE'}</button>
                             </div>
                             <div className={`flex gap-3 overflow-x-auto no-scrollbar pb-2 w-full ${isTablet ? 'flex-wrap' : ''}`}>
-                                 <button onClick={() => setSelectedAccountFilter(null)} className={`flex-shrink-0 min-w-[100px] p-4 rounded-2xl border flex flex-col justify-center items-center gap-1 transition-all ${!selectedAccountFilter ? `${T.accent} shadow-md` : `${T.card} opacity-60 hover:opacity-100`} ${isTablet ? 'flex-grow' : ''}`}>
+                                 <button onClick={() => setSelectedAccountFilter(null)} className={`flex-shrink-0 min-w-[100px] p-4 rounded-2xl border flex flex-col justify-center items-center gap-1 transition-all ${!selectedAccountFilter ? (isDark ? 'bg-[#0c0c0e] border-[#D1A96B] text-[#D1A96B]' : T.accent) : `${T.card} opacity-60 hover:opacity-100`} ${isTablet ? 'flex-grow' : ''}`}>
                                     <span className="text-[10px] font-bold uppercase">{TEXT.totalWallet}</span><span className="text-sm font-black">{netWorth.toLocaleString()}</span>
                                 </button>
                                 {accounts.map(acc => (
-                                    <div key={acc.id} onClick={() => setSelectedAccountFilter(acc.id)} className={`flex-shrink-0 min-w-[120px] p-4 rounded-2xl border flex flex-col justify-between relative text-left transition-all cursor-pointer ${selectedAccountFilter === acc.id ? `${T.accent} shadow-md` : `${T.card} opacity-60 hover:opacity-100`} ${isTablet ? 'flex-grow' : ''}`}>
+                                    <div key={acc.id} onClick={() => setSelectedAccountFilter(acc.id)} className={`flex-shrink-0 min-w-[120px] p-4 rounded-2xl border flex flex-col justify-between relative text-left transition-all cursor-pointer ${selectedAccountFilter === acc.id ? T.accent : `${T.card} opacity-60 hover:opacity-100`} ${isTablet ? 'flex-grow' : ''}`}>
                                         {isEditingAccounts && <div onClick={(e) => { e.stopPropagation(); handleDeleteAccount(acc.id); }} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full z-20 hover:scale-110 transition-transform"><X size={10} /></div>}
                                         <div className="flex items-center gap-2 opacity-80">
                                             {isEditingAccounts ? <input value={acc.name} onClick={e => e.stopPropagation()} onChange={e => handleUpdateAccountName(acc.id, e.target.value)} className="text-[10px] font-bold uppercase w-full bg-transparent border-b border-white/20 outline-none text-current" /> : <span className="text-[10px] font-bold uppercase truncate max-w-[90px]">{acc.name}</span>}
                                         </div>
                                         <span className={`text-lg font-bold mt-3 ${acc.balance < 0 && selectedAccountFilter !== acc.id ? 'text-red-500' : ''}`}>{acc.balance.toLocaleString()}</span>
-                                        {selectedAccountFilter === acc.id && <button onClick={(e) => { e.stopPropagation(); setEditingTransaction(null); setShowForm(true); }} className="mt-2 w-full py-1 bg-white/20 hover:bg-white/30 rounded text-[10px] font-bold text-center uppercase tracking-widest">+ Add</button>}
+                                        {selectedAccountFilter === acc.id && <button onClick={(e) => { e.stopPropagation(); setEditingTransaction(null); setShowForm(true); }} className={`mt-2 w-full py-1 rounded text-[10px] font-bold text-center uppercase tracking-widest ${isDark ? 'bg-[#0c0c0e]/20 hover:bg-[#0c0c0e]/40' : 'bg-white/20 hover:bg-white/30'}`}>+ Add</button>}
                                     </div>
                                 ))}
                                 {isEditingAccounts && <div className={`flex-shrink-0 min-w-[120px] p-4 rounded-2xl border border-dashed flex flex-col justify-center items-center gap-2 ${T.card} ${isTablet ? 'flex-grow' : ''}`}><input value={newAccountName} onChange={e => setNewAccountName(e.target.value)} placeholder="Name" className={`w-full text-center text-xs font-bold bg-transparent border-b outline-none ${T.text}`} /><button onClick={handleAddAccount} className={`p-2 rounded-full ${T.accent}`}><Plus size={16} /></button></div>}
@@ -251,7 +247,7 @@ const App: React.FC = () => {
             </div>
 
             <div className={`${isTablet ? 'col-span-7' : ''}`}>
-                <div className={`sticky top-[58px] z-20 py-2 mb-4 -mx-4 px-4 transition-all duration-300 backdrop-blur-md ${isDark ? 'bg-[#050505]/80' : 'bg-[#f8fafc]/80'} flex items-center gap-2`}>
+                <div className={`sticky top-[58px] z-20 py-2 mb-4 -mx-4 px-4 transition-all duration-300 backdrop-blur-md ${isDark ? 'bg-[#0c0c0e]/80' : 'bg-[#f8fafc]/80'} flex items-center gap-2`}>
                     <div className="relative flex-shrink-0 z-50">
                         <button onClick={() => setShowSortMenu(!showSortMenu)} title={TEXT.sort} className={`flex items-center justify-center w-8 h-8 rounded-full border shadow-sm active:scale-95 transition-all ${T.card} ${T.secondary}`}><ArrowUpDown size={14} /></button>
                         {showSortMenu && <><div className="fixed inset-0 z-10" onClick={() => setShowSortMenu(false)} /><div className={`absolute left-0 top-full mt-2 w-40 rounded-2xl shadow-xl border z-20 py-2 overflow-hidden ${T.card}`}>{[{ label: TEXT.sortNewest, value: 'date-desc' }, { label: TEXT.sortOldest, value: 'date-asc' }, { label: TEXT.sortHigh, value: 'amount-desc' }, { label: TEXT.sortLow, value: 'amount-asc' }].map((opt) => (<button key={opt.value} onClick={() => { setSortOption(opt.value as SortOption); setShowSortMenu(false); }} className={`w-full text-left px-4 py-3 text-xs font-bold hover:opacity-70 ${T.text}`}>{opt.label}</button>))}</div></>}
@@ -293,28 +289,28 @@ const App: React.FC = () => {
 
       {showSettings && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <div className={`w-full max-w-sm rounded-[32px] shadow-2xl p-8 animate-in zoom-in-95 duration-200 ${isDark ? 'bg-[#121212] border border-[#D4AF37]/20 shadow-[0_0_30px_rgba(212,175,55,0.1)]' : 'bg-white'}`}>
-            <div className="flex justify-between items-center mb-6"><h2 className={`text-xl font-black ${T.text}`}>{TEXT.settings}</h2><button onClick={() => setShowSettings(false)} className={`p-2 rounded-full transition-colors ${isDark ? 'bg-neutral-800 text-[#D4AF37]' : 'bg-slate-100 text-slate-500'}`}><X size={20} /></button></div>
+          <div className={`w-full max-w-sm rounded-[32px] shadow-2xl p-8 animate-in zoom-in-95 duration-200 ${T.card}`}>
+            <div className="flex justify-between items-center mb-6"><h2 className={`text-xl font-black ${T.text}`}>{TEXT.settings}</h2><button onClick={() => setShowSettings(false)} className={`p-2 rounded-full transition-colors ${isDark ? 'bg-neutral-800 text-[#D1A96B]' : 'bg-slate-100 text-slate-500'}`}><X size={20} /></button></div>
             <div className="space-y-6">
               <div>
                 <label className={`text-[10px] font-black uppercase tracking-wider mb-3 block opacity-50 ${T.text}`}>{TEXT.layout}</label>
-                <div className="flex gap-2"><button onClick={() => setLayoutMode('mobile')} className={`flex-1 py-3 rounded-xl border font-bold text-[10px] flex items-center justify-center gap-2 uppercase ${layoutMode === 'mobile' ? `${isDark ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}><Smartphone size={16} /> {TEXT.mobile}</button><button onClick={() => setLayoutMode('tablet')} className={`flex-1 py-3 rounded-xl border font-bold text-[10px] flex items-center justify-center gap-2 uppercase ${layoutMode === 'tablet' ? `${isDark ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}><Tablet size={16} /> {TEXT.tablet}</button></div>
+                <div className="flex gap-2"><button onClick={() => setLayoutMode('mobile')} className={`flex-1 py-3 rounded-xl border font-bold text-[10px] flex items-center justify-center gap-2 uppercase ${layoutMode === 'mobile' ? `${isDark ? 'border-[#D1A96B] text-[#D1A96B] bg-[#D1A96B]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}><Smartphone size={16} /> {TEXT.mobile}</button><button onClick={() => setLayoutMode('tablet')} className={`flex-1 py-3 rounded-xl border font-bold text-[10px] flex items-center justify-center gap-2 uppercase ${layoutMode === 'tablet' ? `${isDark ? 'border-[#D1A96B] text-[#D1A96B] bg-[#D1A96B]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}><Tablet size={16} /> {TEXT.tablet}</button></div>
               </div>
               <div>
                 <label className={`text-[10px] font-black uppercase tracking-wider mb-3 block opacity-50 ${T.text}`}>{TEXT.language}</label>
-                <div className="flex gap-2"><button onClick={() => setLang('cn')} className={`flex-1 py-2 rounded-xl border font-bold text-xs ${lang === 'cn' ? `${isDark ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}>中文</button><button onClick={() => setLang('en')} className={`flex-1 py-2 rounded-xl border font-bold text-xs ${lang === 'en' ? `${isDark ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}>English</button></div>
+                <div className="flex gap-2"><button onClick={() => setLang('cn')} className={`flex-1 py-2 rounded-xl border font-bold text-xs ${lang === 'cn' ? `${isDark ? 'border-[#D1A96B] text-[#D1A96B] bg-[#D1A96B]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}>中文</button><button onClick={() => setLang('en')} className={`flex-1 py-2 rounded-xl border font-bold text-xs ${lang === 'en' ? `${isDark ? 'border-[#D1A96B] text-[#D1A96B] bg-[#D1A96B]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}>English</button></div>
               </div>
               <div>
                 <label className={`text-[10px] font-black uppercase tracking-wider mb-3 block opacity-50 ${T.text}`}>{TEXT.theme}</label>
                 <div className="grid grid-cols-4 gap-3">
                   {['zen', 'midnight', 'sunset', 'ocean'].map(t => (
-                    <button key={t} onClick={() => setTheme(t as AppTheme)} className={`w-full h-10 rounded-xl border-2 transition-all ${theme === t ? `border-current ${T.text}` : 'border-transparent opacity-30'} ${t === 'midnight' ? 'bg-[#050505] border-[#D4AF37]/50 ring-2 ring-[#D4AF37]/20 shadow-[0_0_10px_rgba(212,175,55,0.2)]' : t === 'zen' ? 'bg-slate-200' : t === 'sunset' ? 'bg-orange-200' : 'bg-cyan-200'}`} />
+                    <button key={t} onClick={() => setTheme(t as AppTheme)} className={`w-full h-10 rounded-xl border-2 transition-all ${theme === t ? `border-current ${T.text}` : 'border-transparent opacity-30'} ${t === 'midnight' ? 'bg-[#0c0c0e] border-[#D1A96B]/50 ring-2 ring-[#D1A96B]/20' : t === 'zen' ? 'bg-slate-200' : t === 'sunset' ? 'bg-orange-200' : 'bg-cyan-200'}`} />
                   ))}
                 </div>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-3 font-black text-[10px] uppercase opacity-50"><Key size={12} className={T.text} />{TEXT.apiKey}</div>
-                <input type="password" value={customApiKey} onChange={e => setCustomApiKey(e.target.value)} placeholder="Paste Gemini API Key here" className={`w-full p-3 rounded-xl border bg-transparent text-xs font-bold outline-none mb-2 transition-all ${isDark ? 'border-[#D4AF37]/20 focus:border-[#D4AF37] text-[#D4AF37]' : 'border-slate-200 focus:border-indigo-500'}`} />
+                <input type="password" value={customApiKey} onChange={e => setCustomApiKey(e.target.value)} placeholder="Paste Gemini API Key here" className={`w-full p-3 rounded-xl border bg-transparent text-xs font-bold outline-none mb-2 transition-all ${isDark ? 'border-[#D1A96B]/20 focus:border-[#D1A96B] text-[#D1A96B]' : 'border-slate-200 focus:border-indigo-500'}`} />
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-3 font-black text-[10px] uppercase opacity-50"><ShieldCheck size={12} className={T.text} />{TEXT.dataPrivacy}</div>

@@ -69,7 +69,6 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
     }
   }, [initialData, defaultAccountId, defaultTagId, tags]);
 
-  // Image Compression Logic
   const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -80,27 +79,13 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const MAX_WIDTH = 800;
-          const MAX_HEIGHT = 800;
           let width = img.width;
           let height = img.height;
-
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
+          if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
+          else { if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } }
+          canvas.width = width; canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx?.drawImage(img, 0, 0, width, height);
-          // Compress to JPEG with 0.6 quality
           resolve(canvas.toDataURL('image/jpeg', 0.6));
         };
       };
@@ -111,21 +96,28 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
     if (e.target.files && e.target.files.length > 0) {
       setIsProcessingImg(true);
       const files = Array.from(e.target.files) as File[];
-      const remainingSlots = 4 - images.length;
-      
       try {
-        const processedImages = await Promise.all(
-            files.slice(0, remainingSlots).map(file => compressImage(file))
-        );
+        const processedImages = await Promise.all(files.slice(0, 4).map(file => compressImage(file)));
         setImages(prev => [...prev, ...processedImages]);
-      } catch (error) {
-        console.error("Image processing failed", error);
-        alert("Failed to process image");
-      } finally {
-        setIsProcessingImg(false);
-        e.target.value = ''; 
-      }
+      } finally { setIsProcessingImg(false); e.target.value = ''; }
     }
+  };
+
+  const handleTagClick = (tag: Tag) => {
+    const isSelected = selectedTags.includes(tag.id);
+    const hasSubTags = tag.subTags && tag.subTags.length > 0;
+    if (!isSelected) {
+       setSelectedTags([tag.id]);
+       if (hasSubTags) setExpandedTagId(tag.id);
+       else setExpandedTagId(null);
+    } else {
+       if (hasSubTags) setExpandedTagId(expandedTagId === tag.id ? null : tag.id);
+       else setSelectedTags([]);
+    }
+  };
+
+  const handleSubTagSelect = (tagId: string, subTagName: string) => {
+      setSelectedSubTags(prev => ({ [tagId]: prev[tagId] === subTagName ? '' : subTagName }));
   };
 
   const handleCreateTag = () => {
@@ -138,37 +130,9 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       subTags: []
     };
     onAddTag(newTag);
-    setSelectedTags(prev => [...prev, newTag.id]);
+    setSelectedTags([newTag.id]);
     setIsCreatingTag(false);
     setNewTagName('');
-  };
-
-  const handleTagClick = (tag: Tag) => {
-    const isSelected = selectedTags.includes(tag.id);
-    const hasSubTags = tag.subTags && tag.subTags.length > 0;
-
-    if (!isSelected) {
-       setSelectedTags(prev => [...prev, tag.id]);
-       if (hasSubTags) setExpandedTagId(tag.id);
-       else setExpandedTagId(null);
-    } else {
-       if (hasSubTags) {
-          if (expandedTagId === tag.id) setExpandedTagId(null); 
-          else setExpandedTagId(tag.id);
-       } else {
-          handleRemoveTag(tag.id);
-       }
-    }
-  };
-
-  const handleSubTagSelect = (tagId: string, subTagName: string) => {
-      if (selectedSubTags[tagId] === subTagName) {
-          const newSubs = { ...selectedSubTags };
-          delete newSubs[tagId];
-          setSelectedSubTags(newSubs);
-      } else {
-          setSelectedSubTags(prev => ({ ...prev, [tagId]: subTagName }));
-      }
   };
 
   const handleRemoveTag = (tagId: string) => {
@@ -182,161 +146,133 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || isProcessingImg) return;
-
     onSave({
       amount: parseFloat(amount),
-      type,
-      accountId,
+      type, accountId,
       toAccountId: type === 'transfer' ? toAccountId : undefined,
       tags: selectedTags,
       subTags: selectedSubTags,
       date: initialData ? initialData.date : Date.now(),
-      note,
-      images,
-      isConfirmed
+      note, images, isConfirmed
     }, initialData?.id);
     onClose();
   };
 
-  const isDark = T.bg === 'bg-slate-900';
+  const isDark = T.bg.includes('#0c0c0e') || T.bg.includes('neutral-950');
   const expandedTag = tags.find(t => t.id === expandedTagId);
-  const showSubTagBar = expandedTag && selectedTags.includes(expandedTag.id) && expandedTag.subTags.length > 0;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center animate-in fade-in duration-200">
-      <div className={`w-full max-w-lg rounded-t-[32px] max-h-[95vh] overflow-y-auto flex flex-col ${T.bg} shadow-2xl`}>
-        <div className="flex justify-between items-center p-6 border-b border-black/5">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-end justify-center animate-in fade-in duration-300">
+      <div className={`w-full max-w-lg rounded-t-[40px] max-h-[95vh] overflow-y-auto flex flex-col ${T.bg} shadow-2xl relative border-t ${isDark ? 'border-white/10' : 'border-black/5'}`}>
+        <div className="flex justify-between items-center p-6 pb-2">
           <h2 className={`text-xl font-black ${T.text}`}>
             {isCreatingTag ? text.newLabel : (initialData ? text.editRecord : text.newRecord)}
           </h2>
-          <button onClick={onClose} className={`p-2 rounded-full ${T.card} ${T.secondary}`}><X size={20} /></button>
+          <button onClick={onClose} className={`p-2 rounded-full ${isDark ? 'bg-white/5 text-white/40' : 'bg-black/5 text-black/40'}`}><X size={20} /></button>
         </div>
 
-        <div className="p-6 flex flex-col gap-6">
+        <div className="p-6 pt-2 flex flex-col gap-6">
           {!isCreatingTag ? (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              <div className={`flex p-1 rounded-xl ${isDark ? 'bg-slate-800' : 'bg-slate-200/50'}`}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6 pb-4">
+              <div className={`flex p-1 rounded-2xl ${isDark ? 'bg-white/5 border border-white/10' : 'bg-slate-200/50'}`}>
                 {['expense', 'income', 'transfer'].map((t) => (
-                    <button key={t} type="button" onClick={() => setType(t as TransactionType)} className={`flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all ${type === t ? `${T.card} ${T.text} shadow-sm` : 'text-slate-400'}`}>
+                    <button key={t} type="button" onClick={() => setType(t as TransactionType)} className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${type === t ? `${T.accent}` : 'opacity-40'}`}>
                         {text[t]}
                     </button>
                 ))}
               </div>
 
-              <div className="text-center py-2">
-                 <input type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" className={`w-full text-center py-2 text-5xl font-black border-none focus:outline-none bg-transparent ${T.text}`} autoFocus={!initialData} />
+              <div className="text-center">
+                 <input type="number" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" className={`w-full text-center py-2 text-6xl font-black border-none focus:outline-none bg-transparent ${T.text}`} autoFocus={!initialData} />
+                 <div className="flex justify-center mt-2">
+                    <select value={accountId} onChange={e => setAccountId(e.target.value)} className={`text-[10px] font-black uppercase tracking-widest appearance-none bg-transparent text-center outline-none ${T.text}`}>
+                        {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    </select>
+                 </div>
               </div>
 
-              {type === 'transfer' ? (
-                 <div className="flex flex-col gap-2 p-3 rounded-xl border border-dashed border-slate-300">
-                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold w-12 opacity-50 uppercase">{text.from}</span>
-                        <select value={accountId} onChange={e => setAccountId(e.target.value)} className={`flex-1 p-2 rounded-lg font-bold appearance-none bg-transparent ${T.text}`}>
-                           {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                        </select>
-                     </div>
-                     <div className="flex items-center gap-2 border-t border-slate-100 pt-2">
-                        <span className="text-[10px] font-bold w-12 opacity-50 uppercase">{text.to}</span>
-                        <select value={toAccountId} onChange={e => setToAccountId(e.target.value)} className={`flex-1 p-2 rounded-lg font-bold appearance-none bg-transparent ${T.text}`}>
-                            {accounts.filter(a => a.id !== accountId).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                          </select>
-                     </div>
+              {type === 'transfer' && (
+                 <div className={`flex flex-col gap-2 p-4 rounded-2xl border border-dashed ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-slate-50'}`}>
+                     <div className="flex items-center justify-between"><span className="text-[10px] font-black opacity-30 uppercase">{text.from}</span><select value={accountId} onChange={e => setAccountId(e.target.value)} className="bg-transparent font-black text-sm outline-none">{accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
+                     <div className="h-px bg-current opacity-5 my-1" />
+                     <div className="flex items-center justify-between"><span className="text-[10px] font-black opacity-30 uppercase">{text.to}</span><select value={toAccountId} onChange={e => setToAccountId(e.target.value)} className="bg-transparent font-black text-sm outline-none">{accounts.filter(a => a.id !== accountId).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
                  </div>
-              ) : (
-                <div className="flex justify-center">
-                   <select value={accountId} onChange={e => setAccountId(e.target.value)} className={`text-xs font-bold appearance-none bg-transparent opacity-40 text-center ${T.text}`}>
-                       {accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                    </select>
-                </div>
               )}
 
               {type !== 'transfer' && (
-                <div className="flex flex-col gap-3">
-                   <div className="flex justify-between items-center">
-                      <label className="text-[10px] font-bold uppercase opacity-50">{text.category}</label>
-                      <button type="button" onClick={() => setIsCreatingTag(true)} className={`text-[10px] font-bold ${T.secondary}`}>+ {text.create}</button>
+                <div className="relative flex flex-col gap-2">
+                   <div className="flex justify-between items-center px-1 mb-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest opacity-30">{text.category}</label>
+                      <button type="button" onClick={() => setIsCreatingTag(true)} className={`text-[10px] font-black uppercase tracking-widest opacity-50 underline`}>+ {text.create}</button>
                    </div>
                    
-                   {/* FIXED: Added pb-2 and px-1 to prevent edge clipping */}
                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1 items-start">
                       {tags.filter(t => t.type === 'both' || t.type === type).map(tag => {
                         const isSelected = selectedTags.includes(tag.id);
                         const isExpanded = expandedTagId === tag.id;
                         const activeSubTag = selectedSubTags[tag.id];
-                        const hasSubTags = tag.subTags && tag.subTags.length > 0;
-
                         return (
-                            <button key={tag.id} type="button" onClick={() => handleTagClick(tag)} className={`relative flex flex-col items-center justify-center px-4 py-3 rounded-2xl text-[10px] font-bold border transition-all whitespace-nowrap min-w-[80px] ${isSelected ? `${tag.color} border-current ring-1 ring-current shadow-sm transform scale-105` : `${tag.color} border-transparent bg-opacity-30 opacity-60 grayscale-[0.3]`}`}>
+                            <button key={tag.id} type="button" onClick={() => handleTagClick(tag)} className={`relative flex flex-col items-center justify-center px-3 py-3 rounded-[16px] text-[10px] font-black border transition-all whitespace-nowrap min-w-[85px] ${isSelected ? `${isDark ? 'border-[#D1A96B] text-[#D1A96B] bg-[#D1A96B]/10 ring-1 ring-[#D1A96B]/30' : `${tag.color} border-current ring-1 ring-current`}` : `border-transparent ${isDark ? 'bg-white/5 text-white/40' : 'bg-slate-100 text-slate-400'}`}`}>
                               <span>{tag.name}</span>
-                              {!isExpanded && activeSubTag && <span className="text-[9px] opacity-90 mt-0.5 max-w-[60px] truncate">{activeSubTag}</span>}
-                              {hasSubTags && <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 transition-all ${isExpanded ? 'translate-y-1' : ''}`}><ChevronDown size={12} className={`opacity-50 ${isExpanded ? 'rotate-180' : ''}`} /></div>}
+                              {activeSubTag && <span className="text-[9px] opacity-70 mt-1 truncate max-w-[75px] font-bold">{activeSubTag}</span>}
+                              {tag.subTags.length > 0 && <ChevronDown size={12} className={`mt-1 opacity-30 transition-all duration-300 ${isExpanded ? 'rotate-180 text-current' : ''}`} />}
                             </button>
                         );
                       })}
                    </div>
 
-                   {showSubTagBar && (
-                       <div className={`mt-2 p-3 rounded-2xl border animate-in slide-in-from-top-2 fade-in duration-300 origin-top ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                           <div className="flex items-center gap-2 mb-2 opacity-50 px-1">
-                               <CornerDownRight size={12} />
-                               <span className="text-[10px] font-bold uppercase">{expandedTag.name}</span>
-                           </div>
+                   {/* Sub-tag selection as an absolute drawer over the fields below */}
+                   {expandedTag && selectedTags.includes(expandedTag.id) && expandedTag.subTags.length > 0 && (
+                       <div className={`absolute top-full left-0 right-0 z-50 p-4 mt-1 rounded-[24px] shadow-2xl backdrop-blur-xl border border-white/10 animate-in slide-in-from-top-2 fade-in duration-300 ${isDark ? 'bg-[#1a1a1c]/95 shadow-black/60' : 'bg-white/95 shadow-slate-200'}`}>
                            <div className="flex flex-wrap gap-2">
                                {expandedTag.subTags.map(sub => {
                                    const isActive = selectedSubTags[expandedTag.id] === sub;
                                    return (
-                                       <button key={sub} type="button" onClick={() => handleSubTagSelect(expandedTag.id, sub)} className={`px-3 py-2 rounded-xl text-[10px] font-bold transition-all border shadow-sm ${isActive ? `${expandedTag.color} border-current` : `${isDark ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-white border-slate-200 text-slate-500'} hover:border-slate-300`}`}>
+                                       <button key={sub} type="button" onClick={() => handleSubTagSelect(expandedTag.id, sub)} className={`px-4 py-2 rounded-xl text-[10px] font-black transition-all border ${isActive ? `${isDark ? 'border-[#D1A96B] text-[#D1A96B] bg-[#D1A96B]/10' : `${expandedTag.color} border-current`}` : `${isDark ? 'border-white/5 text-white/30' : 'bg-white border-slate-200 text-slate-500'}`}`}>
                                            {sub}
                                        </button>
                                    )
                                })}
-                               <button type="button" onClick={() => handleRemoveTag(expandedTag.id)} className="px-3 py-2 rounded-xl text-[10px] font-bold border border-red-100 text-red-500 bg-red-50 hover:bg-red-100 ml-auto">Clear</button>
+                               <button type="button" onClick={() => handleRemoveTag(expandedTag.id)} className={`px-4 py-2 rounded-xl text-[10px] font-black border transition-colors ml-auto ${isDark ? 'border-red-500/30 text-red-400 bg-red-500/10' : 'border-red-100 text-red-500 bg-red-50'}`}>Clear</button>
                            </div>
                        </div>
                    )}
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                 <div className={`p-3 rounded-xl border border-dashed flex items-center justify-between ${isDark ? 'border-slate-700' : 'border-slate-300'}`}>
-                    <span className="text-[10px] font-bold opacity-50 uppercase">{text.receipt}</span>
-                    <div className="flex gap-2 items-center">
-                       {isProcessingImg && <Loader2 size={16} className="animate-spin text-indigo-500" />}
-                       <button type="button" disabled={isProcessingImg} onClick={() => cameraInputRef.current?.click()} className={`p-2 rounded-lg ${T.card}`}><Camera size={16} /></button>
-                       <button type="button" disabled={isProcessingImg} onClick={() => fileInputRef.current?.click()} className={`p-2 rounded-lg ${T.card}`}><ImageIcon size={16} /></button>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                 <div className={`p-4 rounded-2xl border border-dashed flex items-center justify-between ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-300 bg-slate-50'}`}>
+                    <span className="text-[10px] font-black opacity-30 uppercase">{text.receipt}</span>
+                    <div className="flex gap-3 items-center">
+                       {isProcessingImg && <Loader2 size={16} className="animate-spin text-[#D1A96B]" />}
+                       <button type="button" onClick={() => cameraInputRef.current?.click()} className="opacity-60 hover:opacity-100 transition-opacity"><Camera size={18} /></button>
+                       <button type="button" onClick={() => fileInputRef.current?.click()} className="opacity-60 hover:opacity-100 transition-opacity"><ImageIcon size={18} /></button>
                     </div>
                     <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
                     <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleFileChange} />
                  </div>
-                 <button type="button" onClick={() => setIsConfirmed(!isConfirmed)} className={`p-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${isConfirmed ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'border-dashed opacity-50'}`}>
+                 <button type="button" onClick={() => setIsConfirmed(!isConfirmed)} className={`p-4 rounded-2xl border flex items-center justify-center gap-2 transition-all ${isConfirmed ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500 font-black' : 'border-dashed opacity-40 font-bold'}`}>
                     <ShieldCheck size={16} />
-                    <span className="text-[10px] font-bold uppercase">{isConfirmed ? text.confirm : text.pending}</span>
+                    <span className="text-[10px] uppercase">{isConfirmed ? text.confirm : text.pending}</span>
                  </button>
               </div>
               
-              {images.length > 0 && (
-                  <div className="flex gap-2 overflow-x-auto pb-1">
-                      {images.map((img, i) => (
-                          <div key={i} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-slate-200">
-                              <img src={img} className="w-full h-full object-cover" />
-                              <button type="button" onClick={() => setImages(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-0 right-0 bg-black/50 text-white p-0.5"><X size={10}/></button>
-                          </div>
-                      ))}
-                  </div>
-              )}
-
-              <input value={note} onChange={e => setNote(e.target.value)} placeholder={text.note} className={`w-full bg-transparent border-b p-2 text-sm focus:outline-none ${isDark ? 'border-slate-700' : 'border-slate-200'}`} />
-              <button type="submit" disabled={isProcessingImg} className={`w-full py-4 rounded-xl font-bold text-lg mt-2 ${T.accent} ${isProcessingImg ? 'opacity-50' : ''}`}>{isProcessingImg ? 'Processing...' : text.save}</button>
+              <div className="space-y-4">
+                  <input value={note} onChange={e => setNote(e.target.value)} placeholder={text.note} className={`w-full bg-transparent border-b pb-2 text-sm font-medium focus:outline-none transition-all ${isDark ? 'border-white/10 focus:border-[#D1A96B]' : 'border-slate-200 focus:border-slate-900'}`} />
+                  <button type="submit" disabled={isProcessingImg} className={`w-full py-5 rounded-[24px] font-black text-lg transition-all active:scale-[0.98] ${T.accent} ${isProcessingImg ? 'opacity-50' : ''}`}>
+                    {isProcessingImg ? '...' : text.save}
+                  </button>
+              </div>
             </form>
           ) : (
-            <div className="flex flex-col gap-4">
-               <input autoFocus value={newTagName} onChange={e => setNewTagName(e.target.value)} placeholder={text.newLabel} className={`w-full p-4 rounded-xl text-lg font-bold outline-none border-2 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`} />
+            <div className="flex flex-col gap-6 py-4">
+               <input autoFocus value={newTagName} onChange={e => setNewTagName(e.target.value)} placeholder={text.newLabel} className={`w-full p-5 rounded-2xl text-xl font-black outline-none border transition-all ${isDark ? 'bg-white/5 border-white/10 focus:border-[#D1A96B]' : 'bg-white border-slate-200'}`} />
                <div className="grid grid-cols-5 gap-3">
-                  {TAG_COLORS.map(c => <button key={c} onClick={() => setNewTagColor(c)} className={`h-10 rounded-full ${c.split(' ')[0]} ${newTagColor === c ? 'ring-2 ring-offset-2 ring-black' : ''}`} />)}
+                  {TAG_COLORS.map(c => <button key={c} onClick={() => setNewTagColor(c)} className={`h-12 rounded-2xl ${c.split(' ')[0]} ${newTagColor === c ? 'ring-4 ring-offset-2 ring-[#D1A96B]' : ''}`} />)}
                </div>
                <div className="flex gap-3 mt-4">
-                  <button onClick={() => setIsCreatingTag(false)} className={`flex-1 py-3 font-bold rounded-xl ${T.card}`}>{text.cancel}</button>
-                  <button onClick={handleCreateTag} className={`flex-1 py-3 font-bold rounded-xl ${T.accent}`}>{text.create}</button>
+                  <button onClick={() => setIsCreatingTag(false)} className="flex-1 py-4 font-black rounded-2xl opacity-50 uppercase text-xs">{text.cancel}</button>
+                  <button onClick={handleCreateTag} className={`flex-1 py-4 font-black rounded-2xl ${T.accent} uppercase text-xs`}>{text.create}</button>
                </div>
             </div>
           )}
