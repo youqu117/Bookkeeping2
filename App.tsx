@@ -1,16 +1,16 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Transaction, SortOption, TAGS_PACK_TEXT, Tag, AppTheme, Account, INITIAL_ACCOUNTS, Language, LayoutMode } from './types';
 import { TransactionCard } from './components/TransactionCard';
 import { TransactionForm } from './components/TransactionForm';
 import { StatsView } from './components/StatsView';
 import { TagManager } from './components/TagManager';
 import { GeminiChat } from './components/GeminiChat';
-import { Plus, LayoutList, PieChart, ArrowUpDown, Settings, Download, Upload, X, Filter, Wallet, Database, ShieldCheck, ChevronDown, ChevronUp, Smartphone, Tablet, Sparkles, Key } from 'lucide-react';
+import { Plus, LayoutList, PieChart, ArrowUpDown, Settings, Download, Upload, X, Filter, Wallet, Database, ShieldCheck, ChevronDown, ChevronUp, Smartphone, Tablet, Sparkles, Key, Trash2 } from 'lucide-react';
 
 const TRANSLATIONS = {
   en: {
-    appName: 'Bookkeeping', netAssets: 'Net Assets', transactions: 'Transactions', sort: 'Sort', settings: 'Settings', save: 'Save', edit: 'Edit', delete: 'Delete', newLabel: 'New Label', newRecord: 'New Record', editRecord: 'Edit Record', confirm: 'Confirm', pending: 'Pending', cancel: 'Cancel', create: 'Create', category: 'Category', note: 'Note...', receipt: 'Receipt', expense: 'Expense', income: 'Income', transfer: 'Transfer', assetStatus: 'Asset Status', budgetControl: 'Budget Control', cashFlow: 'Cash Flow', totalAssets: 'Total Assets', liabilities: 'Liabilities', language: 'Language', dataPrivacy: 'Data Privacy', backup: 'Backup (JSON)', restore: 'Restore (JSON)', exportCsv: 'Export Excel/CSV', theme: 'Theme', appearance: 'Appearance', tagStyle: 'Tag Style', modern: 'Modern', minimal: 'Minimal', resetPack: 'Reset to Default', sortNewest: 'Newest', sortOldest: 'Oldest', sortHigh: 'High Amount', sortLow: 'Low Amount', all: 'All', noRecords: 'No records', budgetExceeded: 'Budget Exceeded', nearLimit: 'Near Limit', unsorted: 'Unsorted', transferTo: 'Transfer to', from: 'Account', to: 'To', snap: 'Snap', upload: 'Upload', totalWallet: 'Total Wallet', accounts: 'Accounts', addAccount: 'Add Account', accountName: 'Account Name', initialBalance: 'Initial Balance', layout: 'Layout', mobile: 'Mobile', tablet: 'Tablet', apiKey: 'Gemini API Key'
+    appName: 'Bookkeeping', netAssets: 'Net Assets', transactions: 'Transactions', sort: 'Sort', settings: 'Settings', save: 'Save', edit: 'Edit', delete: 'Delete', newLabel: 'New Label', newRecord: 'New Record', editRecord: 'Edit Record', confirm: 'Confirm', pending: 'Pending', cancel: 'Cancel', create: 'Create', category: 'Category', note: 'Note...', receipt: 'Receipt', expense: 'Expense', income: 'Income', transfer: 'Transfer', assetStatus: 'Asset Status', budgetControl: 'Budget Control', cashFlow: 'Cash Flow', totalAssets: 'Total Assets', liabilities: 'Liabilities', language: 'Language', dataPrivacy: 'Data Privacy', backup: 'Backup (JSON)', restore: 'Restore (JSON)', exportCsv: 'Export Excel/CSV', theme: 'Theme', appearance: 'Appearance', tagStyle: 'Tag Style', modern: 'Modern', minimal: 'Minimal', resetPack: 'Reset to Default', sortNewest: 'Newest', sortOldest: 'Oldest', sortHigh: 'High Amount', sortLow: 'Low Amount', all: 'All', noRecords: 'No records', budgetExceeded: 'Budget Exceeded', nearLimit: 'Near Limit', unsorted: 'Unsorted', transferTo: 'Transfer to', from: 'Account', to: 'To', snap: 'Snap', upload: 'Upload', totalWallet: 'Total Wallet', accounts: 'Account Management', addAccount: 'Add Account', accountName: 'Account Name', initialBalance: 'Initial Balance', layout: 'Layout', mobile: 'Mobile', tablet: 'Tablet', apiKey: 'Gemini API Key'
   },
   cn: {
     appName: 'Bookkeeping', netAssets: '净资产', transactions: '交易记录', sort: '排序', settings: '设置', save: '保存', edit: '编辑', delete: '删除', newLabel: '新建标签', newRecord: '记一笔', editRecord: '编辑记录', confirm: '已确认', pending: '待确认', cancel: '取消', create: '创建', category: '分类', note: '备注...', receipt: '凭证', expense: '支出', income: '收入', transfer: '转账', assetStatus: '资产概况', budgetControl: '预算控制', cashFlow: '收支趋势', totalAssets: '总资产', liabilities: '负债', language: '语言 / Language', dataPrivacy: '数据管理', backup: '备份数据 (JSON)', restore: '恢复数据 (JSON)', exportCsv: '导出表格 (Excel)', theme: '主题', appearance: '外观', tagStyle: '标签样式', modern: '现代', minimal: '极简', resetPack: '重置默认标签', sortNewest: '日期最新', sortOldest: '日期最早', sortHigh: '金额最高', sortLow: '金额最低', all: '全部', noRecords: '暂无记录', budgetExceeded: '超支预警', nearLimit: '接近预算', unsorted: '未分类', transferTo: '转账至', from: '账户', to: '转入账户', snap: '拍照', upload: '相册', totalWallet: '总资产', accounts: '账户管理', addAccount: '添加账户', accountName: '账户名称', initialBalance: '初始余额', layout: '布局', mobile: '手机', tablet: '平板', apiKey: 'Gemini API Key'
@@ -44,12 +44,33 @@ const App: React.FC = () => {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [selectedTagFilter, setSelectedTagFilter] = useState<string | null>(null);
   const [selectedAccountFilter, setSelectedAccountFilter] = useState<string | null>(null);
-  const [showAccounts, setShowAccounts] = useState(false); // Folded by default
+  const [showAccounts, setShowAccounts] = useState(false); 
   const [isEditingAccounts, setIsEditingAccounts] = useState(false);
   const [newAccountName, setNewAccountName] = useState('');
   const [showTagManager, setShowTagManager] = useState(false);
   const [tagManagerInitialId, setTagManagerInitialId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 实时计算各账户余额，避免 useEffect 导致的状态同步死循环
+  const accountsWithBalance = useMemo(() => {
+    return accounts.map(acc => {
+      let balance = acc.initialBalance;
+      transactions.forEach(tx => {
+        if (tx.accountId === acc.id) {
+          if (tx.type === 'expense' || tx.type === 'transfer') balance -= tx.amount;
+          else if (tx.type === 'income') balance += tx.amount;
+        }
+        if (tx.toAccountId === acc.id && tx.type === 'transfer') {
+          balance += tx.amount;
+        }
+      });
+      return { ...acc, balance };
+    });
+  }, [accounts, transactions]);
+
+  const netWorth = useMemo(() => {
+    return accountsWithBalance.filter(a => a.includeInNetWorth).reduce((acc, a) => acc + a.balance, 0);
+  }, [accountsWithBalance]);
 
   const handleTouchStart = (e: React.TouchEvent) => { (window as any).touchStartX = e.touches[0].clientX; };
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -66,23 +87,6 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem('zenledger_lang', lang); }, [lang]);
   useEffect(() => { localStorage.setItem('zenledger_layout', layoutMode); }, [layoutMode]);
   useEffect(() => { localStorage.setItem('zenledger_api_key', customApiKey); }, [customApiKey]);
-
-  useEffect(() => {
-    const newAccounts = accounts.map(acc => ({ ...acc, balance: acc.initialBalance }));
-    const sortedTx = [...transactions].sort((a, b) => a.date - b.date);
-    sortedTx.forEach(tx => {
-      const accIndex = newAccounts.findIndex(a => a.id === tx.accountId);
-      if (accIndex === -1) return;
-      if (tx.type === 'expense') newAccounts[accIndex].balance -= tx.amount;
-      else if (tx.type === 'income') newAccounts[accIndex].balance += tx.amount;
-      else if (tx.type === 'transfer' && tx.toAccountId) {
-        newAccounts[accIndex].balance -= tx.amount;
-        const toIndex = newAccounts.findIndex(a => a.id === tx.toAccountId);
-        if (toIndex !== -1) newAccounts[toIndex].balance += tx.amount;
-      }
-    });
-    setAccounts(newAccounts);
-  }, [transactions]);
 
   const getThemeStyles = () => {
     switch(theme) {
@@ -111,13 +115,21 @@ const App: React.FC = () => {
   const handleAddTag = (tag: Tag) => setTags(prev => [...prev, tag]);
   const handleDeleteTag = (tagId: string) => { if (window.confirm(TEXT.delete + "?")) setTags(prev => prev.filter(t => t.id !== tagId)); };
   const handleTagDoubleClick = (tagId: string) => { setTagManagerInitialId(tagId); setShowTagManager(true); };
+  
   const handleAddAccount = () => {
     if (!newAccountName.trim()) return;
     setAccounts(prev => [...prev, { id: crypto.randomUUID(), name: newAccountName.trim(), type: 'cash', balance: 0, initialBalance: 0, includeInNetWorth: true }]);
     setNewAccountName('');
   };
-  const handleDeleteAccount = (id: string) => { if (window.confirm(TEXT.delete + "?")) { setAccounts(prev => prev.filter(a => a.id !== id)); if (selectedAccountFilter === id) setSelectedAccountFilter(null); } };
-  const handleUpdateAccountName = (id: string, newName: string) => setAccounts(prev => prev.map(a => a.id === id ? { ...a, name: newName } : a));
+  const handleDeleteAccount = (id: string) => { 
+    if (window.confirm(TEXT.delete + "?")) { 
+      setAccounts(prev => prev.filter(a => a.id !== id)); 
+      if (selectedAccountFilter === id) setSelectedAccountFilter(null); 
+    } 
+  };
+  const handleUpdateAccountName = (id: string, newName: string) => {
+    setAccounts(prev => prev.map(a => a.id === id ? { ...a, name: newName } : a));
+  };
   const handleUpdateBudget = (tagId: string, limit: number) => setTags(prev => prev.map(t => t.id === tagId ? { ...t, budgetLimit: limit } : t));
   
   const handleExportCSV = () => {
@@ -179,11 +191,9 @@ const App: React.FC = () => {
      if(sortOption === 'date-asc') return dateB - dateA; return dateA - dateB;
   });
 
-  const netWorth = accounts.filter(a => a.includeInNetWorth).reduce((acc, a) => acc + a.balance, 0);
-  const activeWalletName = selectedAccountFilter ? accounts.find(a => a.id === selectedAccountFilter)?.name : TEXT.totalWallet;
-  const activeWalletBalance = selectedAccountFilter ? accounts.find(a => a.id === selectedAccountFilter)?.balance || 0 : netWorth;
+  const activeWalletName = selectedAccountFilter ? accountsWithBalance.find(a => a.id === selectedAccountFilter)?.name : TEXT.totalWallet;
+  const activeWalletBalance = selectedAccountFilter ? accountsWithBalance.find(a => a.id === selectedAccountFilter)?.balance || 0 : netWorth;
   const isTablet = layoutMode === 'tablet';
-
   const isDark = theme === 'midnight';
 
   return (
@@ -221,24 +231,84 @@ const App: React.FC = () => {
                     {showAccounts && (
                         <div className="animate-in slide-in-from-top-4 fade-in duration-300">
                             <div className="flex justify-between items-center px-1 mb-2">
-                                 <span className="text-[10px] font-bold uppercase opacity-40">{TEXT.accounts}</span>
-                                 <button onClick={() => setIsEditingAccounts(!isEditingAccounts)} className={`text-[10px] font-bold uppercase underline opacity-50 ${T.text}`}>{isEditingAccounts ? 'Done' : 'MANAGE'}</button>
+                                 <span className="text-[10px] font-black uppercase opacity-40">{TEXT.accounts}</span>
+                                 <button onClick={() => setIsEditingAccounts(!isEditingAccounts)} className={`text-[10px] font-black uppercase underline opacity-60 hover:opacity-100 transition-all ${T.text}`}>{isEditingAccounts ? 'Done' : 'MANAGE'}</button>
                             </div>
-                            <div className={`flex gap-3 overflow-x-auto no-scrollbar pb-2 w-full ${isTablet ? 'flex-wrap' : ''}`}>
-                                 <button onClick={() => setSelectedAccountFilter(null)} className={`flex-shrink-0 min-w-[100px] p-4 rounded-2xl border flex flex-col justify-center items-center gap-1 transition-all ${!selectedAccountFilter ? (isDark ? 'bg-[#0c0c0e] border-[#D1A96B] text-[#D1A96B]' : T.accent) : `${T.card} opacity-60 hover:opacity-100`} ${isTablet ? 'flex-grow' : ''}`}>
-                                    <span className="text-[10px] font-bold uppercase">{TEXT.totalWallet}</span><span className="text-sm font-black">{netWorth.toLocaleString()}</span>
-                                </button>
-                                {accounts.map(acc => (
-                                    <div key={acc.id} onClick={() => setSelectedAccountFilter(acc.id)} className={`flex-shrink-0 min-w-[120px] p-4 rounded-2xl border flex flex-col justify-between relative text-left transition-all cursor-pointer ${selectedAccountFilter === acc.id ? T.accent : `${T.card} opacity-60 hover:opacity-100`} ${isTablet ? 'flex-grow' : ''}`}>
-                                        {isEditingAccounts && <div onClick={(e) => { e.stopPropagation(); handleDeleteAccount(acc.id); }} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full z-20 hover:scale-110 transition-transform"><X size={10} /></div>}
-                                        <div className="flex items-center gap-2 opacity-80">
-                                            {isEditingAccounts ? <input value={acc.name} onClick={e => e.stopPropagation()} onChange={e => handleUpdateAccountName(acc.id, e.target.value)} className="text-[10px] font-bold uppercase w-full bg-transparent border-b border-white/20 outline-none text-current" /> : <span className="text-[10px] font-bold uppercase truncate max-w-[90px]">{acc.name}</span>}
+                            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-3 px-1 w-full">
+                                 {/* 总资产卡片 */}
+                                 <button 
+                                    onClick={() => setSelectedAccountFilter(null)} 
+                                    className={`flex-shrink-0 w-[calc((100%-1rem)/3)] h-[90px] p-4 rounded-2xl border flex flex-col justify-between items-start transition-all relative ${!selectedAccountFilter ? (isDark ? 'bg-[#0c0c0e] border-[#D1A96B] text-[#D1A96B]' : T.accent) : `${T.card} opacity-60 hover:opacity-100`}`}
+                                 >
+                                    <span className="text-[10px] font-black uppercase leading-none">{TEXT.totalAssets}</span>
+                                    <span className="text-lg font-black leading-none truncate w-full text-left">{netWorth.toLocaleString()}</span>
+                                 </button>
+
+                                 {/* 账户卡片列表 */}
+                                 {accountsWithBalance.map(acc => (
+                                    <div 
+                                      key={acc.id} 
+                                      onClick={() => setSelectedAccountFilter(acc.id)} 
+                                      className={`flex-shrink-0 w-[calc((100%-1rem)/3)] h-[90px] p-4 rounded-2xl border flex flex-col justify-between items-start transition-all relative cursor-pointer ${selectedAccountFilter === acc.id ? (isDark ? 'bg-[#0c0c0e] border-[#D1A96B] text-[#D1A96B]' : T.accent) : `${T.card} opacity-60 hover:opacity-100`}`}
+                                    >
+                                        <div className="flex items-center gap-1 opacity-80 w-full overflow-hidden">
+                                            {isEditingAccounts ? (
+                                              <input 
+                                                value={acc.name} 
+                                                autoFocus
+                                                onClick={e => e.stopPropagation()} 
+                                                onChange={e => handleUpdateAccountName(acc.id, e.target.value)} 
+                                                className="text-[10px] font-black uppercase w-full bg-transparent border-b border-white/20 outline-none text-current" 
+                                              />
+                                            ) : (
+                                              <span className="text-[10px] font-black uppercase truncate w-full">{acc.name}</span>
+                                            )}
                                         </div>
-                                        <span className={`text-lg font-bold mt-3 ${acc.balance < 0 && selectedAccountFilter !== acc.id ? 'text-red-500' : ''}`}>{acc.balance.toLocaleString()}</span>
-                                        {selectedAccountFilter === acc.id && <button onClick={(e) => { e.stopPropagation(); setEditingTransaction(null); setShowForm(true); }} className={`mt-2 w-full py-1 rounded text-[10px] font-bold text-center uppercase tracking-widest ${isDark ? 'bg-[#0c0c0e]/20 hover:bg-[#0c0c0e]/40' : 'bg-white/20 hover:bg-white/30'}`}>+ Add</button>}
+
+                                        <div className="flex w-full items-end justify-between overflow-hidden">
+                                          <span className={`text-lg font-black leading-none truncate ${acc.balance < 0 && selectedAccountFilter !== acc.id ? 'text-red-500' : ''}`}>
+                                            {acc.balance.toLocaleString()}
+                                          </span>
+                                          
+                                          {/* 操作按钮组 */}
+                                          <div className="flex items-center gap-1 flex-shrink-0 ml-1">
+                                            {!isEditingAccounts && selectedAccountFilter === acc.id && (
+                                              <div 
+                                                onClick={(e) => { e.stopPropagation(); setEditingTransaction(null); setShowForm(true); }} 
+                                                className={`p-1 rounded-lg transition-all active:scale-90 ${isDark ? 'bg-[#D1A96B]/20 text-[#D1A96B]' : 'bg-white/30 text-white'}`}
+                                              >
+                                                <Plus size={14} strokeWidth={3} />
+                                              </div>
+                                            )}
+
+                                            {isEditingAccounts && (
+                                              <div 
+                                                onClick={(e) => { e.stopPropagation(); handleDeleteAccount(acc.id); }} 
+                                                className="p-1 rounded-full bg-red-500 text-white shadow-lg active:scale-90 transition-all hover:bg-red-600 flex items-center justify-center"
+                                              >
+                                                <X size={10} strokeWidth={4} />
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
                                     </div>
-                                ))}
-                                {isEditingAccounts && <div className={`flex-shrink-0 min-w-[120px] p-4 rounded-2xl border border-dashed flex flex-col justify-center items-center gap-2 ${T.card} ${isTablet ? 'flex-grow' : ''}`}><input value={newAccountName} onChange={e => setNewAccountName(e.target.value)} placeholder="Name" className={`w-full text-center text-xs font-bold bg-transparent border-b outline-none ${T.text}`} /><button onClick={handleAddAccount} className={`p-2 rounded-full ${T.accent}`}><Plus size={16} /></button></div>}
+                                 ))}
+
+                                 {/* 管理模式下的快速添加 */}
+                                 {isEditingAccounts && (
+                                   <div className={`flex-shrink-0 w-[calc((100%-1rem)/3)] h-[90px] p-3 rounded-2xl border border-dashed flex flex-col justify-center items-center gap-1.5 transition-all ${T.card}`}>
+                                      <input 
+                                        value={newAccountName} 
+                                        onChange={e => setNewAccountName(e.target.value)} 
+                                        placeholder="+" 
+                                        onKeyDown={e => e.key === 'Enter' && handleAddAccount()}
+                                        className={`w-full text-center text-[10px] font-black uppercase bg-transparent border-b outline-none focus:border-current ${T.text}`} 
+                                      />
+                                      <button onClick={handleAddAccount} className={`p-1.5 rounded-lg ${T.accent} active:scale-90 transition-all shadow-md`}>
+                                        <Plus size={12} strokeWidth={4} />
+                                      </button>
+                                   </div>
+                                 )}
                             </div>
                         </div>
                     )}
@@ -269,7 +339,7 @@ const App: React.FC = () => {
                                      <span className="text-[10px] font-bold">{dayTotal > 0 ? '+' : ''}{dayTotal.toLocaleString()}</span>
                                  </div>
                                  <div className={`flex flex-col gap-3 ${isTablet ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1' : ''}`}>
-                                     {group.items.map(tx => <TransactionCard key={tx.id} transaction={tx} allTags={tags} accounts={accounts} themeStyles={T} text={TEXT} onEdit={() => handleEditRequest(tx)} onDelete={() => handleDeleteTransaction(tx.id)} />)}
+                                     {group.items.map(tx => <TransactionCard key={tx.id} transaction={tx} allTags={tags} accounts={accountsWithBalance} themeStyles={T} text={TEXT} onEdit={() => handleEditRequest(tx)} onDelete={() => handleDeleteTransaction(tx.id)} />)}
                                  </div>
                             </div>
                         );
@@ -279,13 +349,13 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
-        {view === 'stats' && <div className="animate-in fade-in slide-in-from-right-4 duration-300"><StatsView transactions={transactions} tags={tags} accounts={accounts} themeStyles={T} text={TEXT} onUpdateBudget={handleUpdateBudget} /></div>}
+        {view === 'stats' && <div className="animate-in fade-in slide-in-from-right-4 duration-300"><StatsView transactions={transactions} tags={tags} accounts={accountsWithBalance} themeStyles={T} text={TEXT} onUpdateBudget={handleUpdateBudget} /></div>}
       </main>
 
       {view === 'list' && <button onClick={() => { setEditingTransaction(null); setShowForm(true); }} className={`fixed bottom-8 right-6 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 ${T.accent}`}><Plus size={28} /></button>}
-      {showForm && <TransactionForm tags={tags} accounts={accounts} themeStyles={T} text={TEXT} initialData={editingTransaction} defaultAccountId={selectedAccountFilter || undefined} defaultTagId={selectedTagFilter || undefined} onSave={addOrUpdateTransaction} onAddTag={handleAddTag} onDeleteTag={handleDeleteTag} onClose={() => setShowForm(false)} />}
+      {showForm && <TransactionForm tags={tags} accounts={accountsWithBalance} themeStyles={T} text={TEXT} initialData={editingTransaction} defaultAccountId={selectedAccountFilter || undefined} defaultTagId={selectedTagFilter || undefined} onSave={addOrUpdateTransaction} onAddTag={handleAddTag} onDeleteTag={handleDeleteTag} onClose={() => setShowForm(false)} />}
       {showTagManager && <TagManager tags={tags} initialTagId={tagManagerInitialId} onUpdateTags={setTags} onClose={() => setShowTagManager(false)} text={TEXT} themeStyles={T} />}
-      {showGeminiChat && <GeminiChat tags={tags} accounts={accounts} recentTransactions={transactions.slice(0, 15)} onClose={() => setShowGeminiChat(false)} onSaveTransaction={(tx) => { addOrUpdateTransaction(tx); setShowGeminiChat(false); }} themeStyles={T} apiKey={customApiKey} />}
+      {showGeminiChat && <GeminiChat tags={tags} accounts={accountsWithBalance} recentTransactions={transactions.slice(0, 15)} onClose={() => setShowGeminiChat(false)} onSaveTransaction={(tx) => { addOrUpdateTransaction(tx); setShowGeminiChat(false); }} themeStyles={T} apiKey={customApiKey} />}
 
       {showSettings && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
