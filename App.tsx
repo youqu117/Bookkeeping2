@@ -6,14 +6,14 @@ import { TransactionForm } from './components/TransactionForm';
 import { StatsView } from './components/StatsView';
 import { TagManager } from './components/TagManager';
 import { GeminiChat } from './components/GeminiChat';
-import { Plus, LayoutList, PieChart, ArrowUpDown, Settings, Download, Upload, X, Filter, Wallet, Database, ShieldCheck, ChevronDown, ChevronUp, Smartphone, Tablet, Sparkles } from 'lucide-react';
+import { Plus, LayoutList, PieChart, ArrowUpDown, Settings, Download, Upload, X, Filter, Wallet, Database, ShieldCheck, ChevronDown, ChevronUp, Smartphone, Tablet, Sparkles, Key } from 'lucide-react';
 
 const TRANSLATIONS = {
   en: {
-    appName: 'ZenLedger', netAssets: 'Net Assets', transactions: 'Transactions', sort: 'Sort', settings: 'Settings', save: 'Save', edit: 'Edit', delete: 'Delete', newLabel: 'New Label', newRecord: 'New Record', editRecord: 'Edit Record', confirm: 'Confirm', pending: 'Pending', cancel: 'Cancel', create: 'Create', category: 'Category', note: 'Note...', receipt: 'Receipt', expense: 'Expense', income: 'Income', transfer: 'Transfer', assetStatus: 'Asset Status', budgetControl: 'Budget Control', cashFlow: 'Cash Flow', totalAssets: 'Total Assets', liabilities: 'Liabilities', language: 'Language', dataPrivacy: 'Data Privacy', backup: 'Backup', restore: 'Restore', theme: 'Theme', appearance: 'Appearance', tagStyle: 'Tag Style', modern: 'Modern', minimal: 'Minimal', resetPack: 'Reset to Default', sortNewest: 'Newest', sortOldest: 'Oldest', sortHigh: 'High Amount', sortLow: 'Low Amount', all: 'All', noRecords: 'No records', budgetExceeded: 'Budget Exceeded', nearLimit: 'Near Limit', unsorted: 'Unsorted', transferTo: 'Transfer to', from: 'Account', to: 'To', snap: 'Snap', upload: 'Upload', totalWallet: 'Total Wallet', accounts: 'Accounts', addAccount: 'Add Account', accountName: 'Account Name', initialBalance: 'Initial Balance', layout: 'Layout', mobile: 'Mobile', tablet: 'Tablet'
+    appName: 'Bookkeeping', netAssets: 'Net Assets', transactions: 'Transactions', sort: 'Sort', settings: 'Settings', save: 'Save', edit: 'Edit', delete: 'Delete', newLabel: 'New Label', newRecord: 'New Record', editRecord: 'Edit Record', confirm: 'Confirm', pending: 'Pending', cancel: 'Cancel', create: 'Create', category: 'Category', note: 'Note...', receipt: 'Receipt', expense: 'Expense', income: 'Income', transfer: 'Transfer', assetStatus: 'Asset Status', budgetControl: 'Budget Control', cashFlow: 'Cash Flow', totalAssets: 'Total Assets', liabilities: 'Liabilities', language: 'Language', dataPrivacy: 'Data Privacy', backup: 'Backup (JSON)', restore: 'Restore (JSON)', exportCsv: 'Export Excel/CSV', theme: 'Theme', appearance: 'Appearance', tagStyle: 'Tag Style', modern: 'Modern', minimal: 'Minimal', resetPack: 'Reset to Default', sortNewest: 'Newest', sortOldest: 'Oldest', sortHigh: 'High Amount', sortLow: 'Low Amount', all: 'All', noRecords: 'No records', budgetExceeded: 'Budget Exceeded', nearLimit: 'Near Limit', unsorted: 'Unsorted', transferTo: 'Transfer to', from: 'Account', to: 'To', snap: 'Snap', upload: 'Upload', totalWallet: 'Total Wallet', accounts: 'Accounts', addAccount: 'Add Account', accountName: 'Account Name', initialBalance: 'Initial Balance', layout: 'Layout', mobile: 'Mobile', tablet: 'Tablet', apiKey: 'Gemini API Key'
   },
   cn: {
-    appName: 'ZenLedger', netAssets: '净资产', transactions: '交易记录', sort: '排序', settings: '设置', save: '保存', edit: '编辑', delete: '删除', newLabel: '新建标签', newRecord: '记一笔', editRecord: '编辑记录', confirm: '已确认', pending: '待确认', cancel: '取消', create: '创建', category: '分类', note: '备注...', receipt: '凭证', expense: '支出', income: '收入', transfer: '转账', assetStatus: '资产概况', budgetControl: '预算控制', cashFlow: '收支趋势', totalAssets: '总资产', liabilities: '负债', language: '语言 / Language', dataPrivacy: '数据安全', backup: '备份', restore: '恢复', theme: '主题', appearance: '外观', tagStyle: '标签样式', modern: '现代', minimal: '极简', resetPack: '重置默认标签', sortNewest: '日期最新', sortOldest: '日期最早', sortHigh: '金额最高', sortLow: '金额最低', all: '全部', noRecords: '暂无记录', budgetExceeded: '超支预警', nearLimit: '接近预算', unsorted: '未分类', transferTo: '转账至', from: '账户', to: '转入账户', snap: '拍照', upload: '相册', totalWallet: '总资产', accounts: '账户管理', addAccount: '添加账户', accountName: '账户名称', initialBalance: '初始余额', layout: '布局', mobile: '手机', tablet: '平板'
+    appName: 'Bookkeeping', netAssets: '净资产', transactions: '交易记录', sort: '排序', settings: '设置', save: '保存', edit: '编辑', delete: '删除', newLabel: '新建标签', newRecord: '记一笔', editRecord: '编辑记录', confirm: '已确认', pending: '待确认', cancel: '取消', create: '创建', category: '分类', note: '备注...', receipt: '凭证', expense: '支出', income: '收入', transfer: '转账', assetStatus: '资产概况', budgetControl: '预算控制', cashFlow: '收支趋势', totalAssets: '总资产', liabilities: '负债', language: '语言 / Language', dataPrivacy: '数据管理', backup: '备份数据 (JSON)', restore: '恢复数据 (JSON)', exportCsv: '导出表格 (Excel)', theme: '主题', appearance: '外观', tagStyle: '标签样式', modern: '现代', minimal: '极简', resetPack: '重置默认标签', sortNewest: '日期最新', sortOldest: '日期最早', sortHigh: '金额最高', sortLow: '金额最低', all: '全部', noRecords: '暂无记录', budgetExceeded: '超支预警', nearLimit: '接近预算', unsorted: '未分类', transferTo: '转账至', from: '账户', to: '转入账户', snap: '拍照', upload: '相册', totalWallet: '总资产', accounts: '账户管理', addAccount: '添加账户', accountName: '账户名称', initialBalance: '初始余额', layout: '布局', mobile: '手机', tablet: '平板', apiKey: 'Gemini API Key'
   }
 };
 
@@ -33,6 +33,7 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<AppTheme>(() => (localStorage.getItem('zenledger_theme') as AppTheme) || 'zen');
   const [lang, setLang] = useState<Language>(() => (localStorage.getItem('zenledger_lang') as Language) || 'cn');
   const [layoutMode, setLayoutMode] = useState<LayoutMode>(() => (localStorage.getItem('zenledger_layout') as LayoutMode) || 'mobile');
+  const [customApiKey, setCustomApiKey] = useState(() => localStorage.getItem('zenledger_api_key') || '');
   
   const [showForm, setShowForm] = useState(false);
   const [showGeminiChat, setShowGeminiChat] = useState(false);
@@ -50,12 +51,23 @@ const App: React.FC = () => {
   const [tagManagerInitialId, setTagManagerInitialId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Swipe logic
+  const touchStartX = useRef(0);
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+    if (diff > 100) setView('stats'); // Swipe Left -> Stats
+    if (diff < -100) setView('list'); // Swipe Right -> List
+  };
+
   useEffect(() => { localStorage.setItem('zenledger_transactions', JSON.stringify(transactions)); }, [transactions]);
   useEffect(() => { localStorage.setItem('zenledger_accounts', JSON.stringify(accounts)); }, [accounts]);
   useEffect(() => { localStorage.setItem('zenledger_tags', JSON.stringify(tags)); }, [tags]);
   useEffect(() => { localStorage.setItem('zenledger_theme', theme); }, [theme]);
   useEffect(() => { localStorage.setItem('zenledger_lang', lang); }, [lang]);
   useEffect(() => { localStorage.setItem('zenledger_layout', layoutMode); }, [layoutMode]);
+  useEffect(() => { localStorage.setItem('zenledger_api_key', customApiKey); }, [customApiKey]);
 
   useEffect(() => {
     const newAccounts = accounts.map(acc => ({ ...acc, balance: acc.initialBalance }));
@@ -72,12 +84,18 @@ const App: React.FC = () => {
       }
     });
     setAccounts(newAccounts);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactions]);
 
   const getThemeStyles = () => {
     switch(theme) {
-      case 'midnight': return { bg: 'bg-slate-900', text: 'text-slate-50', card: 'bg-slate-800 border-slate-700', accent: 'bg-indigo-600 text-white', secondary: 'text-slate-400' };
+      // Obsidian Gold (Premium Midnight)
+      case 'midnight': return { 
+          bg: 'bg-[#050505]', 
+          text: 'text-[#FDFBF7]', 
+          card: 'bg-[#121212] border-[#D4AF37]/15', 
+          accent: 'bg-gradient-to-tr from-[#8E6E2E] via-[#D4AF37] to-[#F9E076] text-[#050505] shadow-[0_0_15px_rgba(212,175,55,0.2)]', 
+          secondary: 'text-[#D4AF37]/50' 
+      };
       case 'sunset': return { bg: 'bg-orange-50', text: 'text-slate-800', card: 'bg-white border-orange-100', accent: 'bg-orange-500 text-white', secondary: 'text-slate-500' };
       case 'ocean': return { bg: 'bg-cyan-50', text: 'text-slate-800', card: 'bg-white border-cyan-100', accent: 'bg-cyan-600 text-white', secondary: 'text-slate-500' };
       case 'zen': default: return { bg: 'bg-slate-50', text: 'text-slate-800', card: 'bg-white border-slate-200', accent: 'bg-slate-900 text-white', secondary: 'text-slate-500' };
@@ -104,15 +122,38 @@ const App: React.FC = () => {
   const handleDeleteAccount = (id: string) => { if (window.confirm(TEXT.delete + "?")) { setAccounts(prev => prev.filter(a => a.id !== id)); if (selectedAccountFilter === id) setSelectedAccountFilter(null); } };
   const handleUpdateAccountName = (id: string, newName: string) => setAccounts(prev => prev.map(a => a.id === id ? { ...a, name: newName } : a));
   const handleUpdateBudget = (tagId: string, limit: number) => setTags(prev => prev.map(t => t.id === tagId ? { ...t, budgetLimit: limit } : t));
+  
   const handleExportCSV = () => {
     const headers = ['Date', 'Type', 'Account', 'To Account', 'Amount', 'Tags', 'SubTags', 'Note', 'Confirmed'];
     const rows = transactions.map(t => [new Date(t.date).toLocaleDateString(), t.type, accounts.find(a => a.id === t.accountId)?.name || 'Unknown', t.toAccountId ? accounts.find(a => a.id === t.toAccountId)?.name : '-', t.amount.toFixed(2), t.tags.map(id => tags.find(tag => tag.id === id)?.name).join('; '), JSON.stringify(t.subTags || {}), t.note || '', t.isConfirmed ? 'Yes' : 'No']);
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", `zenledger_export_${new Date().toISOString().split('T')[0]}.csv`); document.body.appendChild(link); link.click();
+    const link = document.createElement("a"); link.setAttribute("href", encodeURI(csvContent)); link.setAttribute("download", `bookkeeping_export_${new Date().toISOString().split('T')[0]}.csv`); document.body.appendChild(link); link.click();
   };
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return; const reader = new FileReader();
-    reader.onload = (event) => { try { const json = JSON.parse(event.target?.result as string); if (json.transactions) setTransactions(json.transactions); if (json.tags) setTags(json.tags); if (json.accounts) setAccounts(json.accounts); setShowSettings(false); alert('Restored!'); } catch (err) { alert('Invalid file.'); } };
+  
+  const handleBackup = () => {
+    const data = { transactions, accounts, tags, version: '1.2' };
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bookkeeping_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+  };
+
+  const handleRestore = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (data.transactions) setTransactions(data.transactions);
+        if (data.accounts) setAccounts(data.accounts);
+        if (data.tags) setTags(data.tags);
+        alert('Data Restored Successfully!');
+        setShowSettings(false);
+      } catch (err) { alert('Invalid backup file. Please ensure it is a valid JSON file.'); }
+    };
     reader.readAsText(file);
   };
 
@@ -146,20 +187,26 @@ const App: React.FC = () => {
   const activeWalletBalance = selectedAccountFilter ? accounts.find(a => a.id === selectedAccountFilter)?.balance || 0 : netWorth;
   const isTablet = layoutMode === 'tablet';
 
+  const isDark = theme === 'midnight';
+
   return (
-    <div className={`min-h-screen font-sans flex flex-col transition-colors duration-500 ${T.bg} ${T.text}`}>
-      <header className={`sticky top-0 z-30 px-5 pt-3 pb-2 flex justify-between items-center backdrop-blur-md border-b ${theme === 'midnight' ? 'border-slate-800 bg-slate-900/90' : 'border-slate-200/60 bg-white/80'}`}>
+    <div 
+      className={`min-h-screen font-sans flex flex-col transition-colors duration-500 ${T.bg} ${T.text}`}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <header className={`sticky top-0 z-30 px-5 pt-3 pb-2 flex justify-between items-center backdrop-blur-md border-b ${isDark ? 'border-[#D4AF37]/20 bg-[#050505]/90' : 'border-slate-200/60 bg-white/80'}`}>
         <div className="flex items-center gap-2">
-           <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-lg shadow-sm ${T.accent}`}>Z</div>
+           <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-lg shadow-sm ${T.accent}`}>B</div>
            <span className="font-black text-xl tracking-tight">{TEXT.appName}</span>
         </div>
         <div className="flex items-center gap-2">
-           <button onClick={() => setShowGeminiChat(true)} className={`p-2 rounded-xl border transition-all active:scale-95 animate-in fade-in ${theme === 'midnight' ? 'bg-indigo-900/30 border-indigo-700 text-indigo-400' : 'bg-indigo-50 border-indigo-100 text-indigo-500'}`}><Sparkles size={18} /></button>
-           <div className={`flex p-1 rounded-xl border ${theme === 'midnight' ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-200'}`}>
-              <button onClick={() => setView('list')} className={`p-2 rounded-lg transition-all ${view === 'list' ? `${T.card} shadow-sm` : 'opacity-50'}`}><LayoutList size={18} /></button>
-              <button onClick={() => setView('stats')} className={`p-2 rounded-lg transition-all ${view === 'stats' ? `${T.card} shadow-sm` : 'opacity-50'}`}><PieChart size={18} /></button>
+           <button onClick={() => setShowGeminiChat(true)} className={`p-2 rounded-xl border transition-all active:scale-95 animate-in fade-in ${isDark ? 'bg-[#D4AF37]/10 border-[#D4AF37]/30 text-[#D4AF37]' : 'bg-indigo-50 border-indigo-100 text-indigo-500'}`}><Sparkles size={18} /></button>
+           <div className={`flex p-1 rounded-xl border ${isDark ? 'bg-neutral-900 border-neutral-800' : 'bg-slate-100 border-slate-200'}`}>
+              <button onClick={() => setView('list')} className={`p-2 rounded-lg transition-all ${view === 'list' ? `${T.card} shadow-sm border-transparent` : 'opacity-50'}`}><LayoutList size={18} /></button>
+              <button onClick={() => setView('stats')} className={`p-2 rounded-lg transition-all ${view === 'stats' ? `${T.card} shadow-sm border-transparent` : 'opacity-50'}`}><PieChart size={18} /></button>
            </div>
-           <button onClick={() => setShowSettings(true)} className={`p-3 rounded-xl border transition-all active:scale-95 ${theme === 'midnight' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}><Settings size={20} className={T.secondary} /></button>
+           <button onClick={() => setShowSettings(true)} className={`p-3 rounded-xl border transition-all active:scale-95 ${isDark ? 'bg-[#121212] border-[#D4AF37]/20' : 'bg-white border-slate-200'}`}><Settings size={20} className={T.secondary} /></button>
         </div>
       </header>
 
@@ -204,12 +251,11 @@ const App: React.FC = () => {
             </div>
 
             <div className={`${isTablet ? 'col-span-7' : ''}`}>
-                <div className={`sticky top-[58px] z-20 py-2 mb-4 -mx-4 px-4 transition-all duration-300 backdrop-blur-md ${theme === 'midnight' ? 'bg-slate-900/80' : 'bg-[#f8fafc]/80'} flex items-center gap-2`}>
+                <div className={`sticky top-[58px] z-20 py-2 mb-4 -mx-4 px-4 transition-all duration-300 backdrop-blur-md ${isDark ? 'bg-[#050505]/80' : 'bg-[#f8fafc]/80'} flex items-center gap-2`}>
                     <div className="relative flex-shrink-0 z-50">
                         <button onClick={() => setShowSortMenu(!showSortMenu)} title={TEXT.sort} className={`flex items-center justify-center w-8 h-8 rounded-full border shadow-sm active:scale-95 transition-all ${T.card} ${T.secondary}`}><ArrowUpDown size={14} /></button>
                         {showSortMenu && <><div className="fixed inset-0 z-10" onClick={() => setShowSortMenu(false)} /><div className={`absolute left-0 top-full mt-2 w-40 rounded-2xl shadow-xl border z-20 py-2 overflow-hidden ${T.card}`}>{[{ label: TEXT.sortNewest, value: 'date-desc' }, { label: TEXT.sortOldest, value: 'date-asc' }, { label: TEXT.sortHigh, value: 'amount-desc' }, { label: TEXT.sortLow, value: 'amount-asc' }].map((opt) => (<button key={opt.value} onClick={() => { setSortOption(opt.value as SortOption); setShowSortMenu(false); }} className={`w-full text-left px-4 py-3 text-xs font-bold hover:opacity-70 ${T.text}`}>{opt.label}</button>))}</div></>}
                     </div>
-                    <div className="w-[1px] h-6 bg-slate-300 mx-1 flex-shrink-0 opacity-50"></div>
                     <div className="flex-1 overflow-x-auto no-scrollbar flex gap-2 items-center">
                         <button onClick={() => setSelectedTagFilter(null)} className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all border shadow-sm ${!selectedTagFilter ? `${T.accent} border-transparent` : `${T.card} border-transparent ${T.secondary}`}`}>{TEXT.all}</button>
                         {tags.map(tag => (<button key={tag.id} onClick={() => setSelectedTagFilter(tag.id === selectedTagFilter ? null : tag.id)} onDoubleClick={() => handleTagDoubleClick(tag.id)} className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all border shadow-sm flex items-center gap-2 ${tag.id === selectedTagFilter ? `${tag.color} border-current ring-2 ring-current ring-offset-1` : `${tag.color} border-transparent`}`}>{tag.name}</button>))}
@@ -243,32 +289,41 @@ const App: React.FC = () => {
       {view === 'list' && <button onClick={() => { setEditingTransaction(null); setShowForm(true); }} className={`fixed bottom-8 right-6 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 ${T.accent}`}><Plus size={28} /></button>}
       {showForm && <TransactionForm tags={tags} accounts={accounts} themeStyles={T} text={TEXT} initialData={editingTransaction} defaultAccountId={selectedAccountFilter || undefined} defaultTagId={selectedTagFilter || undefined} onSave={addOrUpdateTransaction} onAddTag={handleAddTag} onDeleteTag={handleDeleteTag} onClose={() => setShowForm(false)} />}
       {showTagManager && <TagManager tags={tags} initialTagId={tagManagerInitialId} onUpdateTags={setTags} onClose={() => setShowTagManager(false)} text={TEXT} themeStyles={T} />}
-      {showGeminiChat && <GeminiChat tags={tags} accounts={accounts} recentTransactions={transactions.slice(0, 15)} onClose={() => setShowGeminiChat(false)} onSaveTransaction={(tx) => { addOrUpdateTransaction(tx); setShowGeminiChat(false); }} themeStyles={T} />}
+      {showGeminiChat && <GeminiChat tags={tags} accounts={accounts} recentTransactions={transactions.slice(0, 15)} onClose={() => setShowGeminiChat(false)} onSaveTransaction={(tx) => { addOrUpdateTransaction(tx); setShowGeminiChat(false); }} themeStyles={T} apiKey={customApiKey} />}
 
       {showSettings && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <div className={`w-full max-w-sm rounded-[32px] shadow-2xl p-8 animate-in zoom-in-95 duration-200 ${theme === 'midnight' ? 'bg-slate-900 border border-slate-700' : 'bg-white'}`}>
-            <div className="flex justify-between items-center mb-6"><h2 className={`text-xl font-black ${T.text}`}>{TEXT.settings}</h2><button onClick={() => setShowSettings(false)} className={`p-2 rounded-full transition-colors ${theme === 'midnight' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}><X size={20} /></button></div>
+          <div className={`w-full max-w-sm rounded-[32px] shadow-2xl p-8 animate-in zoom-in-95 duration-200 ${isDark ? 'bg-[#121212] border border-[#D4AF37]/20 shadow-[0_0_30px_rgba(212,175,55,0.1)]' : 'bg-white'}`}>
+            <div className="flex justify-between items-center mb-6"><h2 className={`text-xl font-black ${T.text}`}>{TEXT.settings}</h2><button onClick={() => setShowSettings(false)} className={`p-2 rounded-full transition-colors ${isDark ? 'bg-neutral-800 text-[#D4AF37]' : 'bg-slate-100 text-slate-500'}`}><X size={20} /></button></div>
             <div className="space-y-6">
               <div>
-                <label className={`text-xs font-bold uppercase tracking-wider mb-3 block opacity-50 ${T.text}`}>{TEXT.layout}</label>
-                <div className="flex gap-2"><button onClick={() => setLayoutMode('mobile')} className={`flex-1 py-3 rounded-xl border-2 font-bold text-[10px] flex items-center justify-center gap-2 uppercase ${layoutMode === 'mobile' ? `${T.text} border-current` : 'border-transparent opacity-50'}`}><Smartphone size={16} /> {TEXT.mobile}</button><button onClick={() => setLayoutMode('tablet')} className={`flex-1 py-3 rounded-xl border-2 font-bold text-[10px] flex items-center justify-center gap-2 uppercase ${layoutMode === 'tablet' ? `${T.text} border-current` : 'border-transparent opacity-50'}`}><Tablet size={16} /> {TEXT.tablet}</button></div>
+                <label className={`text-[10px] font-black uppercase tracking-wider mb-3 block opacity-50 ${T.text}`}>{TEXT.layout}</label>
+                <div className="flex gap-2"><button onClick={() => setLayoutMode('mobile')} className={`flex-1 py-3 rounded-xl border font-bold text-[10px] flex items-center justify-center gap-2 uppercase ${layoutMode === 'mobile' ? `${isDark ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}><Smartphone size={16} /> {TEXT.mobile}</button><button onClick={() => setLayoutMode('tablet')} className={`flex-1 py-3 rounded-xl border font-bold text-[10px] flex items-center justify-center gap-2 uppercase ${layoutMode === 'tablet' ? `${isDark ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}><Tablet size={16} /> {TEXT.tablet}</button></div>
               </div>
               <div>
-                <label className={`text-xs font-bold uppercase tracking-wider mb-3 block opacity-50 ${T.text}`}>{TEXT.language}</label>
-                <div className="flex gap-2"><button onClick={() => setLang('cn')} className={`flex-1 py-2 rounded-xl border-2 font-bold text-xs ${lang === 'cn' ? `${T.text} border-current` : 'border-transparent opacity-50'}`}>中文</button><button onClick={() => setLang('en')} className={`flex-1 py-2 rounded-xl border-2 font-bold text-xs ${lang === 'en' ? `${T.text} border-current` : 'border-transparent opacity-50'}`}>English</button></div>
+                <label className={`text-[10px] font-black uppercase tracking-wider mb-3 block opacity-50 ${T.text}`}>{TEXT.language}</label>
+                <div className="flex gap-2"><button onClick={() => setLang('cn')} className={`flex-1 py-2 rounded-xl border font-bold text-xs ${lang === 'cn' ? `${isDark ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}>中文</button><button onClick={() => setLang('en')} className={`flex-1 py-2 rounded-xl border font-bold text-xs ${lang === 'en' ? `${isDark ? 'border-[#D4AF37] text-[#D4AF37] bg-[#D4AF37]/5' : 'border-slate-900 text-slate-900 bg-slate-50'}` : 'border-transparent opacity-50'}`}>English</button></div>
               </div>
               <div>
-                <label className={`text-xs font-bold uppercase tracking-wider mb-3 block opacity-50 ${T.text}`}>{TEXT.theme}</label>
+                <label className={`text-[10px] font-black uppercase tracking-wider mb-3 block opacity-50 ${T.text}`}>{TEXT.theme}</label>
                 <div className="grid grid-cols-4 gap-3">
                   {['zen', 'midnight', 'sunset', 'ocean'].map(t => (
-                    <button key={t} onClick={() => setTheme(t as AppTheme)} className={`w-full h-10 rounded-xl border-2 transition-all ${theme === t ? `border-current ${T.text}` : 'border-transparent opacity-30'} ${t === 'midnight' ? 'bg-slate-900' : t === 'zen' ? 'bg-slate-200' : t === 'sunset' ? 'bg-orange-200' : 'bg-cyan-200'}`} />
+                    <button key={t} onClick={() => setTheme(t as AppTheme)} className={`w-full h-10 rounded-xl border-2 transition-all ${theme === t ? `border-current ${T.text}` : 'border-transparent opacity-30'} ${t === 'midnight' ? 'bg-[#050505] border-[#D4AF37]/50 ring-2 ring-[#D4AF37]/20 shadow-[0_0_10px_rgba(212,175,55,0.2)]' : t === 'zen' ? 'bg-slate-200' : t === 'sunset' ? 'bg-orange-200' : 'bg-cyan-200'}`} />
                   ))}
                 </div>
               </div>
               <div>
-                <div className="flex items-center gap-2 mb-3"><ShieldCheck size={14} className={T.text} /><label className={`text-xs font-bold uppercase tracking-wider opacity-50 ${T.text}`}>{TEXT.dataPrivacy}</label></div>
-                <div className="flex gap-3"><button onClick={handleExportCSV} className={`flex-1 py-3 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 border uppercase ${T.card} ${T.text}`}><Download size={14} /> CSV / Excel</button><button onClick={() => fileInputRef.current?.click()} className={`flex-1 py-3 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 border uppercase ${T.card} ${T.text}`}><Database size={14} /> {TEXT.backup}</button></div><input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleImport} />
+                <div className="flex items-center gap-2 mb-3 font-black text-[10px] uppercase opacity-50"><Key size={12} className={T.text} />{TEXT.apiKey}</div>
+                <input type="password" value={customApiKey} onChange={e => setCustomApiKey(e.target.value)} placeholder="Paste Gemini API Key here" className={`w-full p-3 rounded-xl border bg-transparent text-xs font-bold outline-none mb-2 transition-all ${isDark ? 'border-[#D4AF37]/20 focus:border-[#D4AF37] text-[#D4AF37]' : 'border-slate-200 focus:border-indigo-500'}`} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-3 font-black text-[10px] uppercase opacity-50"><ShieldCheck size={12} className={T.text} />{TEXT.dataPrivacy}</div>
+                <div className="grid grid-cols-2 gap-3">
+                    <button onClick={handleExportCSV} className={`flex-1 py-3 rounded-xl font-bold text-[10px] border uppercase ${T.card} ${T.text} flex items-center justify-center gap-2`}><Download size={14} /> {TEXT.exportCsv}</button>
+                    <button onClick={handleBackup} className={`flex-1 py-3 rounded-xl font-bold text-[10px] border uppercase ${T.card} ${T.text} flex items-center justify-center gap-2`}><Database size={14} /> {TEXT.backup}</button>
+                    <button onClick={() => fileInputRef.current?.click()} className={`col-span-2 py-3 rounded-xl font-bold text-[10px] border uppercase ${T.card} ${T.text} flex items-center justify-center gap-2`}><Upload size={14} /> {TEXT.restore}</button>
+                </div>
+                <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleRestore} />
               </div>
             </div>
           </div>

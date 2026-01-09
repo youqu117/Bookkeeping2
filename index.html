@@ -7,18 +7,27 @@
     <meta name="theme-color" content="#f8fafc">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="ZenLedger">
-    <title>ZenLedger</title>
+    <meta name="apple-mobile-web-app-title" content="Bookkeeping">
+    <title>Bookkeeping</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+      /* 全局强制隐藏滚动条 */
+      * {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+      *::-webkit-scrollbar {
+        display: none;
+        width: 0px;
+        background: transparent;
+      }
       body {
         font-family: 'Inter', sans-serif;
         overscroll-behavior-y: none;
         -webkit-tap-highlight-color: transparent;
       }
-      .no-scrollbar::-webkit-scrollbar { display: none; }
-      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      .active-scale:active { transform: scale(0.97); }
     </style>
   <script type="importmap">
 {

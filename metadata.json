@@ -1,5 +1,5 @@
 {
-  "name": "ZenLedger",
+  "name": "Bookkeeping",
   "description": "A minimalist, card-style expense tracker with AI-powered financial insights and bookkeeping capabilities.",
   "requestFramePermissions": [
     "camera"

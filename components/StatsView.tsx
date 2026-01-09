@@ -74,12 +74,18 @@ export const StatsView: React.FC<StatsViewProps> = ({ transactions, tags, accoun
           margin: { top: 10, right: 10, left: -20, bottom: 0 }
       };
 
+      // Set cursor={false} to remove the grey vertical bar
+      const tooltipProps = {
+          cursor: false as any, 
+          contentStyle: { borderRadius: '12px', fontSize: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }
+      };
+
       if (chartType === 'line') {
           return (
               <LineChart {...commonProps}>
                  <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} dy={10} />
-                 <RechartsTooltip cursor={{ stroke: '#cbd5e1' }} contentStyle={{ borderRadius: '12px', fontSize: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                 <RechartsTooltip {...tooltipProps} />
                  <Line type="monotone" dataKey="income" stroke="#10b981" strokeWidth={3} dot={{r:4}} />
                  <Line type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={3} dot={{r:4}} />
               </LineChart>
@@ -100,7 +106,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ transactions, tags, accoun
                 </defs>
                <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} dy={10} />
-               <RechartsTooltip contentStyle={{ borderRadius: '12px', fontSize: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+               <RechartsTooltip {...tooltipProps} />
                <Area type="monotone" dataKey="income" stroke="#10b981" fillOpacity={1} fill="url(#colorInc)" />
                <Area type="monotone" dataKey="expense" stroke="#ef4444" fillOpacity={1} fill="url(#colorExp)" />
             </AreaChart>
@@ -109,7 +115,7 @@ export const StatsView: React.FC<StatsViewProps> = ({ transactions, tags, accoun
       return (
         <BarChart {...commonProps}>
             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} dy={10} />
-            <RechartsTooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', fontSize: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+            <RechartsTooltip {...tooltipProps} />
             <Bar dataKey="income" fill="#10b981" radius={[4, 4, 0, 0]} barSize={12} />
             <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={12} />
         </BarChart>

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Transaction, Tag, TransactionType, Account, TAG_COLORS } from '../types';
-import { Camera, X, Image as ImageIcon, ShieldCheck, ChevronDown, CornerDownRight } from 'lucide-react';
+import { Camera, X, Image as ImageIcon, ShieldCheck, ChevronDown, CornerDownRight, Loader2 } from 'lucide-react';
 
 interface TransactionFormProps {
   tags: Tag[];
@@ -32,6 +32,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   const [note, setNote] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isConfirmed, setIsConfirmed] = useState(true);
+  const [isProcessingImg, setIsProcessingImg] = useState(false);
   
   const [isCreatingTag, setIsCreatingTag] = useState(false);
   const [newTagName, setNewTagName] = useState('');
@@ -49,7 +50,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       setSelectedTags(initialData.tags);
       setSelectedSubTags(initialData.subTags || {});
       setNote(initialData.note || '');
-      setImages(initialData.images);
+      setImages(initialData.images || []);
       setIsConfirmed(initialData.isConfirmed);
       
       const tagWithSubs = initialData.tags.find(tid => {
@@ -68,15 +69,62 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
     }
   }, [initialData, defaultAccountId, defaultTagId, tags]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
+  // Image Compression Logic
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          // Compress to JPEG with 0.6 quality
+          resolve(canvas.toDataURL('image/jpeg', 0.6));
+        };
+      };
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setIsProcessingImg(true);
       const files = Array.from(e.target.files) as File[];
-      files.slice(0, 4 - images.length).forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => setImages(prev => [...prev, reader.result as string]);
-        reader.readAsDataURL(file);
-      });
-      e.target.value = ''; 
+      const remainingSlots = 4 - images.length;
+      
+      try {
+        const processedImages = await Promise.all(
+            files.slice(0, remainingSlots).map(file => compressImage(file))
+        );
+        setImages(prev => [...prev, ...processedImages]);
+      } catch (error) {
+        console.error("Image processing failed", error);
+        alert("Failed to process image");
+      } finally {
+        setIsProcessingImg(false);
+        e.target.value = ''; 
+      }
     }
   };
 
@@ -133,7 +181,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount) return;
+    if (!amount || isProcessingImg) return;
 
     onSave({
       amount: parseFloat(amount),
@@ -209,7 +257,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
                       <button type="button" onClick={() => setIsCreatingTag(true)} className={`text-[10px] font-bold ${T.secondary}`}>+ {text.create}</button>
                    </div>
                    
-                   <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 items-start">
+                   {/* FIXED: Added pb-2 and px-1 to prevent edge clipping */}
+                   <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 px-1 items-start">
                       {tags.filter(t => t.type === 'both' || t.type === type).map(tag => {
                         const isSelected = selectedTags.includes(tag.id);
                         const isExpanded = expandedTagId === tag.id;
@@ -251,9 +300,10 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               <div className="grid grid-cols-2 gap-4">
                  <div className={`p-3 rounded-xl border border-dashed flex items-center justify-between ${isDark ? 'border-slate-700' : 'border-slate-300'}`}>
                     <span className="text-[10px] font-bold opacity-50 uppercase">{text.receipt}</span>
-                    <div className="flex gap-2">
-                       <button type="button" onClick={() => cameraInputRef.current?.click()} className={`p-2 rounded-lg ${T.card}`}><Camera size={16} /></button>
-                       <button type="button" onClick={() => fileInputRef.current?.click()} className={`p-2 rounded-lg ${T.card}`}><ImageIcon size={16} /></button>
+                    <div className="flex gap-2 items-center">
+                       {isProcessingImg && <Loader2 size={16} className="animate-spin text-indigo-500" />}
+                       <button type="button" disabled={isProcessingImg} onClick={() => cameraInputRef.current?.click()} className={`p-2 rounded-lg ${T.card}`}><Camera size={16} /></button>
+                       <button type="button" disabled={isProcessingImg} onClick={() => fileInputRef.current?.click()} className={`p-2 rounded-lg ${T.card}`}><ImageIcon size={16} /></button>
                     </div>
                     <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
                     <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleFileChange} />
@@ -267,7 +317,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               {images.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto pb-1">
                       {images.map((img, i) => (
-                          <div key={i} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden">
+                          <div key={i} className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border border-slate-200">
                               <img src={img} className="w-full h-full object-cover" />
                               <button type="button" onClick={() => setImages(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-0 right-0 bg-black/50 text-white p-0.5"><X size={10}/></button>
                           </div>
@@ -276,7 +326,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
               )}
 
               <input value={note} onChange={e => setNote(e.target.value)} placeholder={text.note} className={`w-full bg-transparent border-b p-2 text-sm focus:outline-none ${isDark ? 'border-slate-700' : 'border-slate-200'}`} />
-              <button type="submit" className={`w-full py-4 rounded-xl font-bold text-lg mt-2 ${T.accent}`}>{text.save}</button>
+              <button type="submit" disabled={isProcessingImg} className={`w-full py-4 rounded-xl font-bold text-lg mt-2 ${T.accent} ${isProcessingImg ? 'opacity-50' : ''}`}>{isProcessingImg ? 'Processing...' : text.save}</button>
             </form>
           ) : (
             <div className="flex flex-col gap-4">

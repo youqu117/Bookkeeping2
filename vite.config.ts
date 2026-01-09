@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'ZenLedger',
-        short_name: 'ZenLedger',
+        name: 'Bookkeeping',
+        short_name: 'Bookkeeping',
         description: 'Minimalist Expense Tracker',
         theme_color: '#f8fafc',
         background_color: '#f8fafc',

@@ -11,14 +11,15 @@ interface GeminiChatProps {
   onClose: () => void;
   onSaveTransaction: (tx: Omit<Transaction, 'id'>) => void;
   themeStyles: any;
+  apiKey?: string;
 }
 
 export const GeminiChat: React.FC<GeminiChatProps> = ({ 
-  tags, accounts, recentTransactions, onClose, onSaveTransaction, themeStyles: T 
+  tags, accounts, recentTransactions, onClose, onSaveTransaction, themeStyles: T, apiKey 
 }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([
-      { id: 'welcome', role: 'assistant', text: 'Hi! I can help you track expenses or analyze your recent spending.' }
+      { id: 'welcome', role: 'assistant', text: apiKey ? 'Hi! I can help you track expenses or analyze your recent spending.' : 'Please set your Gemini API Key in Settings to start chatting.' }
   ]);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -29,13 +30,21 @@ export const GeminiChat: React.FC<GeminiChatProps> = ({
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
+    
+    if (!apiKey) {
+         setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'user', text: input }]);
+         setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'assistant', text: 'Please configure your API Key in Settings first.' }]);
+         setInput('');
+         return;
+    }
+
     const userMsg: ChatMessage = { id: crypto.randomUUID(), role: 'user', text: input };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setLoading(true);
 
     try {
-        const response = await processWithGemini(userMsg.text!, { tags, accounts, recentTransactions });
+        const response = await processWithGemini(userMsg.text!, { tags, accounts, recentTransactions }, apiKey);
         const aiMsg: ChatMessage = {
             id: crypto.randomUUID(),
             role: 'assistant',
@@ -66,12 +75,12 @@ export const GeminiChat: React.FC<GeminiChatProps> = ({
       }
   };
 
-  const isDark = T.bg === 'bg-slate-900';
+  const isDark = T.bg.includes('slate-900') || T.bg.includes('neutral-950');
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
         <div className={`w-full max-w-md h-[80vh] rounded-[32px] shadow-2xl flex flex-col overflow-hidden relative ${T.bg} ${T.text}`}>
-            <div className={`p-4 border-b flex justify-between items-center ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+            <div className={`p-4 border-b flex justify-between items-center ${isDark ? 'border-white/10' : 'border-slate-100'}`}>
                 <div className="flex items-center gap-2">
                     <Sparkles className="text-indigo-500" size={20} />
                     <h3 className="font-black text-lg">Zen Assistant</h3>
@@ -85,12 +94,12 @@ export const GeminiChat: React.FC<GeminiChatProps> = ({
                     return (
                         <div key={msg.id} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
                             {msg.text && (
-                                <div className={`px-4 py-3 rounded-2xl max-w-[85%] text-sm font-medium ${isUser ? `${T.accent}` : `${isDark ? 'bg-slate-800 text-slate-200' : 'bg-white border shadow-sm text-slate-700'}`}`}>
+                                <div className={`px-4 py-3 rounded-2xl max-w-[85%] text-sm font-medium ${isUser ? `${T.accent}` : `${isDark ? 'bg-white/10 text-slate-200' : 'bg-white border shadow-sm text-slate-700'}`}`}>
                                     {msg.text}
                                 </div>
                             )}
                             {msg.transactionData && (
-                                <div className={`mt-2 p-4 rounded-2xl border w-full max-w-[85%] animate-in slide-in-from-bottom-2 ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-md'}`}>
+                                <div className={`mt-2 p-4 rounded-2xl border w-full max-w-[85%] animate-in slide-in-from-bottom-2 ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-md'}`}>
                                     <div className="text-[10px] font-bold uppercase opacity-50 mb-2">New Transaction</div>
                                     <div className="flex justify-between items-center mb-3">
                                         <div>
@@ -107,10 +116,10 @@ export const GeminiChat: React.FC<GeminiChatProps> = ({
                 {loading && <div className="flex items-center gap-2 opacity-50 text-xs font-bold pl-2"><Loader2 size={12} className="animate-spin" /> Thinking...</div>}
             </div>
 
-            <div className={`p-4 border-t ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
-                <div className={`flex items-center gap-2 p-2 rounded-2xl border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200 shadow-sm'}`}>
-                    <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder="Type 'Lunch $20'..." className="flex-1 bg-transparent px-2 py-1 outline-none text-sm font-medium" />
-                    <button onClick={handleSend} disabled={!input.trim() || loading} className={`p-2 rounded-xl transition-all ${!input.trim() ? 'opacity-30' : 'hover:scale-105'} ${T.accent}`}><Send size={16} /></button>
+            <div className={`p-4 border-t ${isDark ? 'border-white/10' : 'border-slate-100'}`}>
+                <div className={`flex items-center gap-2 p-2 rounded-2xl border ${isDark ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+                    <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder={apiKey ? "Type 'Lunch $20'..." : "Set API Key first..."} disabled={!apiKey} className="flex-1 bg-transparent px-2 py-1 outline-none text-sm font-medium" />
+                    <button onClick={handleSend} disabled={!input.trim() || loading || !apiKey} className={`p-2 rounded-xl transition-all ${!input.trim() ? 'opacity-30' : 'hover:scale-105'} ${T.accent}`}><Send size={16} /></button>
                 </div>
             </div>
         </div>

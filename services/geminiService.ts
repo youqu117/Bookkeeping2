@@ -10,16 +10,17 @@ export interface AIResponse {
 
 export const processWithGemini = async (
   userInput: string,
-  context: { tags: Tag[], accounts: Account[], recentTransactions: Transaction[] }
+  context: { tags: Tag[], accounts: Account[], recentTransactions: Transaction[] },
+  apiKey?: string
 ): Promise<AIResponse> => {
-  // 注意：在打包 APK 时，确保 API_KEY 已通过 Codemagic 环境变量注入或在代码中硬编码（不推荐）
-  const apiKey = (import.meta as any).env?.VITE_API_KEY || process.env.API_KEY;
+  // 优先使用传入的 API Key，其次尝试环境变量
+  const finalApiKey = apiKey || (import.meta as any).env?.VITE_API_KEY || process.env.API_KEY;
   
-  if (!apiKey) {
-      return { action: 'chat', text: 'API Key is missing.' };
+  if (!finalApiKey) {
+      return { action: 'chat', text: 'Please configure your Gemini API Key in Settings.' };
   }
 
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: finalApiKey });
   
   const tagContext = context.tags.map(t => 
     `Tag: "${t.name}" (ID: ${t.id})${t.subTags.length > 0 ? `, SubTags: [${t.subTags.join(', ')}]` : ''}`
@@ -72,6 +73,6 @@ export const processWithGemini = async (
       return JSON.parse(response.text || '{}');
   } catch (error) {
       console.error("Gemini Error:", error);
-      return { action: 'chat', text: "I'm having trouble thinking right now." };
+      return { action: 'chat', text: "I'm having trouble thinking right now. Please check your API Key." };
   }
 };
