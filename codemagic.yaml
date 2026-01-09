@@ -10,9 +10,9 @@ workflows:
     triggering:
       events:
         - push
-      branches:
-        - main
-        - master
+      branch_patterns:
+        - pattern: 'main'
+        - pattern: 'master'
     scripts:
       - name: Install npm dependencies
         script: |
@@ -20,12 +20,17 @@ workflows:
       - name: Build Web Project
         script: |
           npm run build
-      - name: Add Android Platform
+      - name: Initialize Capacitor Android
         script: |
-          npx cap add android
-      - name: Copy Web Assets to Native
+          npx cap telemetry off
+          # 如果 android 目录不存在则添加，存在则直接同步
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+      - name: Sync Web Assets to Native
         script: |
           npx cap copy android
+          npx cap sync android
       - name: Build Android APK (Debug)
         script: |
           cd android
@@ -35,4 +40,4 @@ workflows:
     publishing:
       email:
         recipients:
-          - your-email@example.com # 修改为你的邮箱以接收 APK
+          - your-email@example.com
