@@ -12,7 +12,9 @@ export const processWithGemini = async (
   userInput: string,
   context: { tags: Tag[], accounts: Account[], recentTransactions: Transaction[] }
 ): Promise<AIResponse> => {
-  const apiKey = process.env.API_KEY;
+  // 注意：在打包 APK 时，确保 API_KEY 已通过 Codemagic 环境变量注入或在代码中硬编码（不推荐）
+  const apiKey = (import.meta as any).env?.VITE_API_KEY || process.env.API_KEY;
+  
   if (!apiKey) {
       return { action: 'chat', text: 'API Key is missing.' };
   }
@@ -36,31 +38,7 @@ export const processWithGemini = async (
 
   const systemInstruction = `
     You are an intelligent financial assistant for ZenLedger, a minimalist bookkeeping app.
-    
-    Current Context:
-    - Current Date: ${new Date().toLocaleDateString()}
-    - Available Accounts:
-    ${accountContext}
-    - Available Tags (Categories):
-    ${tagContext}
-    - Recent Transactions:
-    ${txContext}
-
-    Goal: Analyze user input and return a JSON object.
-    
-    SCENARIO 1: RECORD A TRANSACTION
-    If the user wants to log spending/income:
-    - Extract: amount (number), type (expense/income), accountId, tags (array of IDs), note.
-    - Result: { "action": "create", "data": { "amount": 20, "type": "expense", "accountId": "a1", "tags": ["1"], "note": "lunch" }, "text": "I've prepared the transaction for you." }
-
-    SCENARIO 2: ANALYSIS
-    If user asks for insights:
-    - Result: { "action": "analysis", "text": "Your food spending increased by 20% this week..." }
-
-    SCENARIO 3: CHAT
-    - Result: { "action": "chat", "text": "Hello! How can I help with your finances today?" }
-
-    Always return JSON matching the specified format.
+    Goal: Analyze user input and return a JSON object with action 'create', 'analysis', or 'chat'.
   `;
 
   try {
@@ -73,8 +51,8 @@ export const processWithGemini = async (
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              action: { type: Type.STRING, description: "One of 'create', 'analysis', 'chat'" },
-              text: { type: Type.STRING, description: "Helpful response text" },
+              action: { type: Type.STRING },
+              text: { type: Type.STRING },
               data: { 
                 type: Type.OBJECT,
                 properties: {
@@ -91,12 +69,9 @@ export const processWithGemini = async (
         }
       });
       
-      const responseText = response.text;
-      if (!responseText) throw new Error("Empty response from AI");
-      
-      return JSON.parse(responseText);
+      return JSON.parse(response.text || '{}');
   } catch (error) {
       console.error("Gemini Error:", error);
-      return { action: 'chat', text: "I'm having trouble thinking right now. Please try again." };
+      return { action: 'chat', text: "I'm having trouble thinking right now." };
   }
 };
